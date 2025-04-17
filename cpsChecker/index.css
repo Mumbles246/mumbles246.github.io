@@ -265,8 +265,12 @@ h2{
 
 .made-by{
   position:relative;
-  top:145px;
+  top:125px;
   font-size:14px;
+}
+
+#third-line{
+  color:#b4120f;
 }
 
 #help-area{
@@ -291,7 +295,7 @@ h2{
 #help-box{
   position:relative;
   width:550px;
-  height:500px;
+  height:400px;
   bottom:1103px;
   background-color: #fdfdff;
   border: thin solid black;
@@ -336,7 +340,7 @@ h3{
 #help-box-2{
   position:relative;
   width:550px;
-  height:500px;
+  height:400px;
   bottom:1103px;
   background-color: #fdfdff;
   border: thin solid black;
@@ -380,18 +384,5 @@ h3{
   left:590px;
   width:100px;
   word-break: break-all;
-  display: none;
-}
-
-#culling{
-  position:relative;
-  left:5px;
-  width:70px;
-}
-
-#cull{
-  position:relative;
-  bottom:400px;
-  left:460px;
   display: none;
 }

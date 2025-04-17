@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="index.css">
   <title> CPS Checker </title>
 </head>
-<!-- Google tag (gtag.js) -->
+
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MP4T4YLS77"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -19,8 +19,11 @@
   <div class="description">
     <p>This site allows you to check if a macro breaks CPS rules as defined in the ILL rules document.<br>
       <p2 id="second-line">
-        <b>Note:</b> just because a macro violates CPS rules, doesn't necessarily mean the level does.
+        <b>Note:</b> just because a macro violates CPS rules, doesn't necessarily mean the level does. <br><br><br>
       </p2> 
+      <p3 id="third-line">
+        <b>Updated to be 100% accurate to the ILL rules as of April 16, 2025. </b>
+      </p3> 
     </p>
   </div>
   <div class="inputBox" id="ib">
@@ -52,7 +55,7 @@
     Check CPS
   </p>
   <p class="made-by">
-    Made by EDSJustin and Flora
+    Made by EDSJustin, Flora and jojo989
   </p>
   <div id="help-area">
     <img class="question-mark" id="question1" src="./img/help.png" alt="help">
@@ -86,14 +89,6 @@
         <img class="arrow3" src="./img/arrow3.png" alt="Arrow3">
         <img class="hoverArrow3" src="./img/arrow3Hover.png" alt="Arrow3Hovered">
       </div>
-      <label id="cull">
-        Culling
-        <select id="culling">
-            <option value="None">None</option>
-            <option value="Min">Min</option>
-            <option value="Max">Max</option>
-        </select>
-    </label>
     </div>
       <h2>
         Results
@@ -121,8 +116,8 @@
       </h3>
       <p1 class="p1">
         This tool requires macros to be in plain text form. An example of acceptable
-         form is:<br><br>60<br>28 1 0<br>58 1 0<br>72 1 0<br>104 1 0<br>148 1 0<br>
-         172 1 0<br>202 1 0<br>264 1 0<br>. . .<br>
+         form is:<br><br>60<br>28 1 0<br>58 0 0<br>72 1 0<br>104 0 0<br>148 1 0<br>
+         172 0 0<br>202 1 0<br>264 0 0<br>. . .<br>
       </p1>
       <p2 class="p2">
         <br>You can convert a macro to plain text using 
@@ -142,9 +137,8 @@
         The level must not include sections where clicks per second would exceed:<br><br>
         <ul class="list">
           <li style="padding-bottom:5px">15 clicks in a second.</li>
-          <li style="padding-bottom:5px">18 clicks per second rate in any 1/3rd of a second to 1 second.</li>
-          <li style="padding-bottom:5px">20 clicks per second rate in any stint of more than 3 clicks and shorter
-            than 1/3rd of a second.</li>
+          <li style="padding-bottom:5px">3 clicks in a frame.</li>
+          <li style="padding-bottom:5px">A rate of 45 cps in any stint of 5 or more clicks.</li>
         </ul>
       </p1>
       <p2 class="p2">
