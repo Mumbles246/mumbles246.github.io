@@ -1,6 +1,12 @@
 var p1InputArray = [];
 var p2InputArray = [];
 
+var successfulArrays = [];
+var nodesAdded = 0;
+var inputsToUse = [];
+var currentTreeValue = [];
+var currentlyAddedNodes = [];
+
 var p1Rule1Breaks = [];
 var p2Rule1Breaks = [];
 var p1Rule2Breaks = [];
@@ -39,15 +45,34 @@ document.getElementById('checkButton').addEventListener('click', async () =>{
 
     parseInputsToP1P2Array(macroTxt);
 
+    if(document.getElementById('p1box').checked == true){
+        inputsToUse = p1InputArray;
+    }
+    else{
+        inputsToUse = p2InputArray;
+    }
+
     document.getElementById('fps-text').textContent = 'FPS: ' + framerate;
     document.getElementById('fps-text').style.display = 'block';
     document.getElementById('fps-text').style.fontWeight = 'bold';
+    document.getElementById('recurse').style.display = 'block';
+    document.getElementById('nodeCountText').style.display = 'block';
 
     checkP1CpsBreaks();
-    checkP2CpsBreaks();
+    //checkP2CpsBreaks();
 
-    reportP1Results();
-    reportP2Results();
+    reportP1Results("");
+    //reportP2Results();
+
+    var sel = document.getElementById("recursing");
+    sel.length = 0;
+
+    for(var i = 0; i < successfulArrays.length; i++){
+        var opt = document.createElement("option");
+        opt.value = i;
+        opt.text = successfulArrays[i][1];
+        sel.add(opt);
+    }
 
     disable();
 
@@ -57,68 +82,81 @@ document.getElementById('checkButton').addEventListener('click', async () =>{
 document.getElementById('downloadButton').addEventListener('click', async () =>{
     var resultString = 'Macro Name:\n' + macroName +'\n';
     resultString += '\nFPS:\n' + framerate +'\n\n';
-    //resultString += '\nCulling:\n' + document.getElementById('culling').value +'\n\n';
 
-    resultString += '** Player 1 CPS Violations: **\n';
+    if(document.getElementById('p1box').checked == true){
+        resultString += 'Using Player 1 Inputs\n\n';
+    }
+    else{
+        resultString += 'Using Player 2 Inputs\n\n'
+    }
+
+    resultString += '** Step-By-Step Additions of Singular Nodes: **\n';
     const content1 = document.getElementById('outbox1').value;
     resultString += content1;
 
-    resultString += '\n\n** Player 2 CPS Violations: **\n';
-    const content2 = document.getElementById('outbox2').value;
-    resultString += content2;
+    resultString += '\n\n** Summary: **\n\n';
+
+    resultString += 'The following ' + nodesAdded + ' node(s): \n[' + currentlyAddedNodes + '] \nwere added to the tree.\n\n';
+    resultString += 'The new tree containing these additions is: \n[' + currentTreeValue + ']\n\n';
     
     const link = document.createElement("a");
     const file = new Blob([resultString], { type: 'text/plain' });
     link.href = URL.createObjectURL(file);
-    link.download = "cpsbreaks.txt";
+    link.download = "cpsmaximizing.txt";
     link.click();
     URL.revokeObjectURL(link.href);
 });
 
 document.getElementById('refreshButton').addEventListener('click', async () =>{
-    location.reload();
-});
+    if(successfulArrays.length == 0){
+        document.getElementById('refreshButton').style.pointerEvents = 'none';
+        return;
+    }
+    document.getElementById('onlyGroup').style.pointerEvents = 'fill';
+    nodesAdded ++;
+    document.getElementById('nodeCountText').textContent = "Nodes added: " + nodesAdded;
 
-function reportP1Results(){
-    document.getElementById('outbox1').value = '';
-    if(p1Rule1Breaks.length == 0 && p1Rule2Breaks.length == 0
-        && p1Rule3Breaks.length == 0){
-        document.getElementById('check1').style.visibility = 'visible';
-        document.getElementById('outbox1').value = "Rule 1 violations:\n[none]\n\n";
-        document.getElementById('outbox1').value = document.getElementById('outbox1').value + "Rule 2 violations:\n[none]\n\n";
-        document.getElementById('outbox1').value = document.getElementById('outbox1').value + "Rule 3 violations:\n[none]";
+    var indexOfSuccessToUse = document.getElementById("recursing").value;
+    inputsToUse = successfulArrays[indexOfSuccessToUse][0];
+    numToGiveResults = successfulArrays[indexOfSuccessToUse][1];
+
+    currentTreeValue = successfulArrays[indexOfSuccessToUse][0];
+    currentlyAddedNodes.splice(findIndexToInsert(currentlyAddedNodes, numToGiveResults), 0, numToGiveResults);
+
+    if(document.getElementById('onlyAddedBox').checked == true){
+        document.getElementById('treeBox').value = "[" + currentlyAddedNodes + "]";
     }
     else{
-        if(p1Rule1Breaks.length == 0){
-            document.getElementById('outbox1').value = "Rule 1 violations:\n[none]\n\n";
-        }
-        else{
-            document.getElementById('outbox1').value = document.getElementById('outbox1').value + "Rule 1 violations:\n";
-            for(var i = 0; i < p1Rule1Breaks.length; i++){
-                document.getElementById('outbox1').value = document.getElementById('outbox1').value + p1Rule1Breaks[i];
-            }
-            document.getElementById('outbox1').value = document.getElementById('outbox1').value + "\n";
-        }
-        if(p1Rule2Breaks.length == 0){
-            document.getElementById('outbox1').value = document.getElementById('outbox1').value + "Rule 2 violations:\n[none]\n\n";
-        }
-        else{
-            document.getElementById('outbox1').value = document.getElementById('outbox1').value + "Rule 2 violations:\n";
-            for(var i = 0; i < p1Rule2Breaks.length; i++){
-                document.getElementById('outbox1').value = document.getElementById('outbox1').value + p1Rule2Breaks[i];
-            }
-            document.getElementById('outbox1').value = document.getElementById('outbox1').value + "\n";
-        }
-        if(p1Rule3Breaks.length == 0){
-            document.getElementById('outbox1').value = document.getElementById('outbox1').value + "Rule 3 violations:\n[none]";
-        }
-        else{
-            document.getElementById('outbox1').value = document.getElementById('outbox1').value + "Rule 3 violations:\n";
-            for(var i = 0; i < p1Rule3Breaks.length; i++){
-                document.getElementById('outbox1').value = document.getElementById('outbox1').value + p1Rule3Breaks[i];
-            }
-        }
+        document.getElementById('treeBox').value = "[" + currentTreeValue + "]";
+    }
+
+    successfulArrays = [];
+    checkP1CpsBreaks();
+    reportP1Results("-> [" + numToGiveResults + "]\n\n");
+
+    var sel = document.getElementById("recursing");
+    sel.length = 0;
+
+    for(var i = 0; i < successfulArrays.length; i++){
+        var opt = document.createElement("option");
+        opt.value = i;
+        opt.text = successfulArrays[i][1];
+        sel.add(opt);
+    }
+});
+
+function reportP1Results(prepend){
+    //document.getElementById('outbox1').value = '';
+    if(successfulArrays.length > 0){
+        document.getElementById('refreshButton').style.pointerEvents = 'fill';
+        document.getElementById('check1').style.visibility = 'visible';
+        document.getElementById('outbox1').value = document.getElementById('outbox1').value + prepend + successfulArrays.length + " possible insertions.\n"
+    }
+    else{
+        document.getElementById('outbox1').value = document.getElementById('outbox1').value + prepend + "No more nodes can be inserted."
         document.getElementById('cross1').style.visibility = 'visible';
+        document.getElementById('check1').style.visibility = 'hidden';
+        document.getElementById('refreshButton').style.pointerEvents = 'none';
     }
 }
 
@@ -170,21 +208,55 @@ function disable(){
    document.getElementById('upload').style.pointerEvents = 'none';
    document.getElementById('checkButton').style.pointerEvents = 'none';
    document.getElementById('textbox').setAttribute('readonly', 'readonly');
+   document.getElementById('checkboxes').style.pointerEvents = 'none';
 }
 
+function findIndexToInsert(array, element) {
+    for (let i = 0; i < array.length; i++) {
+      if (element <= array[i]) {
+        return i;
+      }
+    }
+    return array.length;
+  }
+
 function checkP1CpsBreaks(){
-    derive(p1InputArray, p1Rule1Breaks);
-    Derive(p1InputArray, p1Rule2Breaks, p1Rule3Breaks, p1Rule2MaxCull, 
-        p1Rule3MaxCull, p1Rule2MinCull, p1Rule3MinCull);
+    for(var i = 0, num = inputsToUse[0]; i <= inputsToUse[inputsToUse.length - 1] - inputsToUse[0]; i++, num++){
+        var testArray = inputsToUse.toSpliced(findIndexToInsert(inputsToUse, num), 0, num);
+
+        if(derive(testArray) == false && Derive(testArray) == false){
+            successfulArrays.push([testArray, num]);
+        }
+    }
+
+    if(successfulArrays.length == 0){
+        document.getElementById('refreshButton').style.pointerEvents = 'none';
+        if(nodesAdded > 0){
+            document.getElementById('maximumText').style.display = 'block';
+        }
+    }
+
+    /*var successfulArrays2 = []; //logic works but explodes exponentially
+    for(var i = 0; i < successfulArrays.length; i++){
+        for(var j = 0, num = successfulArrays[i][0]; j <= successfulArrays[i][successfulArrays[i].length - 1] - successfulArrays[i][0]; j++, num++){
+            var testArray = successfulArrays[i].toSpliced(findIndexToInsert(successfulArrays[i], num), 0, num);
+    
+            if(derive(testArray) == false && Derive(testArray) == false){
+                successfulArrays2.push(testArray);
+            }
+        }
+    } */
+
+    //console.log(successfulArrays);
+    //console.log(successfulArrays2); 
 }
 
 function checkP2CpsBreaks(){ 
-    derive(p2InputArray, p2Rule1Breaks);
-    Derive(p2InputArray, p2Rule2Breaks, p2Rule3Breaks, p2Rule2MaxCull, 
-        p2Rule3MaxCull, p2Rule2MinCull, p2Rule3MinCull);
+    derive(p2InputArray);
+    Derive(p2InputArray);
 }
 
-function derive(inputFrames, breakArray) {
+function derive(inputFrames) {
     for (var i = 0; i < inputFrames.length; i++) {
         var firstClickFrame = inputFrames[i];
         var frameOneSecondLater = firstClickFrame + framerate;
@@ -202,15 +274,14 @@ function derive(inputFrames, breakArray) {
                 break;
             }
         }
-        var timeBetween = parseFloat((lastClickWithinTime - firstClickFrame)) / framerate;
         if (numClicks > 15) {
-            breakArray.push("- " + numClicks + " clicks in 1s: [frame " + firstClickFrame + " to " + frameOneSecondLater +
-                "]: (" + timeBetween.toFixed(3) + "s between first and last)\n");
+            return true;
         }
     }
+    return false;
 }
 
- function Derive(inputFrames, breakArrayRule2, breakArrayRule3, rule2Max, rule3Max, rule2Min, rule3Min) {
+ function Derive(inputFrames) {
     var framesThatBreakRule2 = [];
     for (var i = 0; i < inputFrames.length; i++) {
         var min = true;
@@ -241,10 +312,7 @@ function derive(inputFrames, breakArray) {
             var cps = noClicks / timeBetweenClicks; // Actual number of clicks instead of 5
 
             if (cps > 45) {
-                breakArrayRule3.push('- ' + cps.toFixed(3) + " cps rate for the " + noClicks + " click stint from frames " + stintStart + " to " + stintEnd + " (" + timeBetweenClicks.toFixed(3) + "s)\n");
-                _3break = true;
-                max = true;
-                min = false;
+                return true;
             }
         }
     }
@@ -259,11 +327,7 @@ function derive(inputFrames, breakArray) {
             }
         } 
         if (numberOfClicksOnSameFrame > 3 && !framesThatBreakRule2.includes(inputFrames[i])) {
-            breakArrayRule2.push('- ' + numberOfClicksOnSameFrame + " clicks detected on frame " + inputFrames[i] + "\n");
-            framesThatBreakRule2.push(inputFrames[i]);
-            _2break = true;
-            max = true;
-            min = false;
+           return true;
         }
 
         /*for (var j = 0; j < inputFramesWithinASecond.length; j++) { 
@@ -291,6 +355,7 @@ function derive(inputFrames, breakArray) {
             }
         } */
     }
+    return false;
 }
 
 
@@ -348,6 +413,33 @@ document.getElementById('upload').addEventListener('change', async () =>{
         document.getElementById('noFile').style.fontSize = '15px';
         macroName = file.name.split('.').slice(0,-1).join('.');
     });     
+});
+
+document.getElementById('onlyAddedBox').addEventListener('change', async () =>{
+    if(document.getElementById('onlyAddedBox').checked == true){
+        document.getElementById('treeBox').value = "[" + currentlyAddedNodes + "]";
+    }   
+    else{
+        document.getElementById('treeBox').value = "[" + currentTreeValue + "]";
+    }
+});
+
+document.getElementById('p1box').addEventListener('change', async () =>{
+    if(document.getElementById('p1box').checked == false){
+        document.getElementById('p2box').checked = true;
+    }   
+    else{
+        document.getElementById('p2box').checked = false;
+    }
+});
+
+document.getElementById('p2box').addEventListener('change', async () =>{
+    if(document.getElementById('p2box').checked == false){
+        document.getElementById('p1box').checked = true;
+    }
+    else{
+        document.getElementById('p1box').checked = false;
+    }
 });
 
 document.getElementById('help-area').addEventListener('click', async () =>{
