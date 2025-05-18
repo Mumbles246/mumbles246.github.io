@@ -1,3 +1,19 @@
+// Theme switching functionality
+document.addEventListener('DOMContentLoaded', () => {
+    const themeToggle = document.getElementById('theme-toggle-button');
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    themeToggle.textContent = savedTheme === 'dark' ? 'Mode: Dark' : 'Mode: Light';
+    themeToggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    themeToggle.textContent = newTheme === 'dark' ? 'Mode: Dark' : 'Mode: Light';
+    });
+});
+
+// CPS checker functionality - Nothing Changed Here
 var p1InputArray = [];
 var p2InputArray = [];
 
@@ -55,7 +71,7 @@ document.getElementById('checkButton').addEventListener('click', async () =>{
 });
 
 document.getElementById('downloadButton').addEventListener('click', async () =>{
-    var resultString = 'Macro Name:\n' + macroName +'\n';
+    var resultString = 'Macro name:\n' + macroName +'\n';
     resultString += '\nFPS:\n' + framerate +'\n\n';
     //resultString += '\nCulling:\n' + document.getElementById('culling').value +'\n\n';
 
