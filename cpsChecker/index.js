@@ -254,7 +254,7 @@ function derive(inputFrames, breakArray) {
             var stintStart = inputFramesWithinASecond[0];
             var stintEnd = inputFramesWithinASecond[j + 4];
             var timeBetweenClicks = parseFloat(stintEnd - stintStart) / framerate;
-            var cps = noClicks / timeBetweenClicks; // Actual number of clicks instead of 5
+            var cps = (noClicks-1) / timeBetweenClicks; // Actual number of clicks instead of 5. Added minus 1
 
             if (cps > 45) {
                 breakArrayRule3.push('- ' + cps.toFixed(3) + " cps rate for the " + noClicks + " click stint from frames " + stintStart + " to " + stintEnd + " (" + timeBetweenClicks.toFixed(3) + "s)\n");
