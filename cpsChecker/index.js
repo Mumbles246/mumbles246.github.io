@@ -203,7 +203,7 @@ function checkP2CpsBreaks(){
 function derive(inputFrames, breakArray) {
     for (var i = 0; i < inputFrames.length; i++) {
         var firstClickFrame = inputFrames[i];
-        var frameOneSecondLater = firstClickFrame + framerate;
+        var frameOneSecondLater = firstClickFrame + Math.floor(framerate);
         var numClicks = 0;
         var lastClickWithinTime = firstClickFrame;
         for (var j = 0; j < inputFrames.length; j++) {
@@ -234,7 +234,7 @@ function derive(inputFrames, breakArray) {
         var _2break = false, _3break = false;
         inputFramesWithinASecond = [];
         var firstClickFrame = inputFrames[i];
-        var frameOneSecondLater = firstClickFrame + framerate;
+        var frameOneSecondLater = firstClickFrame + Math.floor(framerate);
         var latestClick = firstClickFrame;
         
         for (var j = 0; j < inputFrames.length; j++) { // Retrieves all clicks up to a second after the click in question, including the one in question
@@ -332,7 +332,10 @@ function validMacro(macro){
 }
 
 function isANumber(str){
-    return !/\D/.test(str);
+    const pattern = new RegExp('^-?\\d*(\\.\\d+)?$');
+    //console.log(pattern.test(str));
+    return pattern.test(str);
+    //return !/\D/.test(str);
   }
 
 function parseInputsToP1P2Array(macroTxt){
@@ -341,7 +344,7 @@ function parseInputsToP1P2Array(macroTxt){
         var lineAsInts1 = lineArray[i].trim().split(/(\s+)/);
         var lineAsInts= lineAsInts1.filter(n => isANumber(n));
         if(i == 0){
-            framerate = parseInt(lineAsInts, 10);
+            framerate = parseFloat(lineArray[0]);//parseInt(lineAsInts, 10);
             continue;
         }
         if(parseInt(lineAsInts[1],10) == 1 && parseInt(lineAsInts[2]) == 0){ //P1 input
@@ -380,6 +383,14 @@ document.getElementById('help-area-2').addEventListener('click', async () =>{
 
 document.getElementById('close-button-2').addEventListener('click', async () =>{
     document.getElementById('help-box-2').style.display='none';
+});
+
+document.getElementById('help-area-3').addEventListener('click', async () =>{
+    document.getElementById('help-box-3').style.display='block';
+});
+
+document.getElementById('close-button-3').addEventListener('click', async () =>{
+    document.getElementById('help-box-3').style.display='none';
 });
 
 /*document.getElementById('culling').addEventListener('change', async () =>{

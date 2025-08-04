@@ -376,7 +376,7 @@ h3{
 #help-area-2{
   position:relative;
   bottom:130px;
-  left: 180px;
+  left: 100px;
   width:50px;
   cursor:pointer;
 }
@@ -408,6 +408,48 @@ h3{
 }
 
 #close-button-2{
+  position:relative;
+  left:555px;
+  cursor:pointer;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+#help-area-3{
+  position:relative;
+  bottom:172px;
+  left: 220px;
+  width:50px;
+  cursor:pointer;
+}
+
+.question-mark-3{
+  width:25px;
+  height:auto;
+}
+
+#help-text-3{
+  position:relative;
+  font-size:14px;
+  left:31px;
+  bottom:20px;
+  white-space: nowrap;
+}
+
+#help-box-3{
+  position:relative;
+  width:550px;
+  height:400px;
+  bottom:1103px;
+  background-color: var(--bg-secondary);
+  border: thin solid var(--border-color);
+  border-width: 1.5px;
+  display:none;
+  padding:10px;
+  color: var(--text-primary);
+}
+
+#close-button-3{
   position:relative;
   left:555px;
   cursor:pointer;

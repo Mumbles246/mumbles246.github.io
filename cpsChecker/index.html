@@ -22,7 +22,7 @@
         <b>Note:</b> just because a macro violates CPS rules, doesn't necessarily mean the level does. <br><br><br>
       </p2> 
       <p3 id="third-line">
-        <b>Updated to include -1 in the Rule 3 check as of July 23, 2025. </b>
+        <b>Updated to support decimal framerates as of August 4, 2025. </b>
       </p3> 
     </p>
   </div>
@@ -67,6 +67,12 @@
     <img class="question-mark" id="question2" src="./img/help.png" alt="help2">
     <p id="help-text-2">
       CPS rules
+    </p>
+  </div>
+  <div id="help-area-3">
+    <img class="question-mark" id="question3" src="./img/help.png" alt="help3">
+    <p id="help-text-3">
+      Formula
     </p>
   </div>
     </div>
@@ -164,6 +170,34 @@
      <p class="dark">
     Dark mode by argx
   </p>
+   <div id="help-box-3" data-closeable>
+      <button id="close-button-3" data-close>
+        <span> &#10006; </span>
+      </button>
+      <h3>
+        How each rule is calculated
+      </h3>
+      <p1 class="p1">
+        Rule 1 is broken if:<br><br>
+        <ul class="list">
+          <li style="padding-bottom:5px">There are more than 15 clicks between (frame of first click) and (frame of first click) + floor(fps).</li>
+        </ul>
+      </p1>
+      <br>
+       <p1 class="p1">
+        Rule 2 is broken if:<br><br>
+        <ul class="list">
+          <li style="padding-bottom:5px">There are more than 3 clicks on any given frame.</li>
+        </ul>
+      </p1>
+       <br>
+       <p1 class="p1">
+        Rule 3 is broken if:<br><br>
+        <ul class="list">
+          <li style="padding-bottom:5px">(Number of clicks in stint - 1) / [(frame of last click - frame of first click) / framerate] > 45.</li>
+        </ul>
+      </p1>
+    </div>
   </main>
   <script
     src="./index.js"></script>
