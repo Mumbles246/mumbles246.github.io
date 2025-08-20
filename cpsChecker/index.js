@@ -219,7 +219,7 @@ function derive(inputFrames, breakArray) {
             }
         }
         var timeBetween = parseFloat((lastClickWithinTime - firstClickFrame)) / framerate;
-        if (numClicks > 15) {
+        if (numClicks > 16) { // Originally 15
             breakArray.push("- " + numClicks + " clicks in 1s: [frame " + firstClickFrame + " to " + frameOneSecondLater +
                 "]: (" + timeBetween.toFixed(3) + "s between first and last)\n");
         }
@@ -247,8 +247,8 @@ function derive(inputFrames, breakArray) {
         }
 
         if (inputFramesWithinASecond.length >= 5) {  // Ignores stints of less than 5 clicks
-        var possibleNumberOfStints = Math.min(inputFramesWithinASecond.length - 4, 11); // Number of stints to check per set of clicks within a second
-        // Don't need to worry about stints longer than 15 clicks, as if there are more than 15 clicks within a second it will be caught by the rule 1 check
+        var possibleNumberOfStints = Math.min(inputFramesWithinASecond.length - 4, 12); // Number of stints to check per set of clicks within a second. 11 for 15
+        // Don't need to worry about stints longer than 16 clicks, as if there are more than 16 clicks within a second it will be caught by the rule 1 check
 
         for (var j = 0, noClicks = 5; j < possibleNumberOfStints; j++, noClicks++) {
             var stintStart = inputFramesWithinASecond[0];
@@ -256,7 +256,7 @@ function derive(inputFrames, breakArray) {
             var timeBetweenClicks = parseFloat(stintEnd - stintStart) / framerate;
             var cps = (noClicks-1) / timeBetweenClicks; // Actual number of clicks instead of 5. Added minus 1
 
-            if (cps > 45) {
+            if (cps > 48) {
                 breakArrayRule3.push('- ' + cps.toFixed(3) + " cps rate for the " + noClicks + " click stint from frames " + stintStart + " to " + stintEnd + " (" + timeBetweenClicks.toFixed(3) + "s)\n");
                 _3break = true;
                 max = true;
