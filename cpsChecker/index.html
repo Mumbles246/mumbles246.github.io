@@ -75,6 +75,76 @@
       Formula
     </p>
   </div>
+   <div id="help-box" data-closeable>
+      <button id="close-button" data-close>
+        <span> &#10006; </span>
+      </button>
+      <h3>
+        Upload format
+      </h3>
+      <p1 class="p1">
+        This tool requires macros to be in plain text form. An example of acceptable
+         form is:<br><br>60<br>28 1 0<br>58 0 0<br>72 1 0<br>104 0 0<br>148 1 0<br>
+         172 0 0<br>202 1 0<br>264 0 0<br>. . .<br>
+      </p1>
+      <p2 class="p2">
+        <br>You can convert a macro to plain text using 
+        <a href="https://matcool.github.io/gd-macro-converter/">
+          Mat's macro converter
+        </a> or <br>
+        <a href="https://conv.nattie.dev/">
+          Nattie's macro converter.
+        </a> 
+      </p2>
+    </div>
+     <div id="help-box-2" data-closeable>
+      <button id="close-button-2" data-close>
+        <span> &#10006; </span>
+      </button>
+      <h3>
+        ILL CPS Rules
+      </h3>
+      <p1 class="p1">
+        The level must not include sections where clicks per second would exceed:<br><br>
+        <ul class="list">
+          <li style="padding-bottom:5px">16 clicks in a second.</li>
+          <li style="padding-bottom:5px">3 clicks in a frame.</li>
+          <li style="padding-bottom:5px">A rate of 48 cps in any stint of 5 or more clicks.</li>
+        </ul>
+      </p1>
+      <p2 class="p2">
+        <br><br>This program checks if the above rules are satisfied for both players in a macro.
+        <br><br>If they're not, it will tell you what frames the violations occur at.
+      </p2>
+    </div>
+    <div id="help-box-3" data-closeable>
+      <button id="close-button-3" data-close>
+        <span> &#10006; </span>
+      </button>
+      <h3>
+        How each rule is calculated
+      </h3>
+      <p1 class="p1">
+        Rule 1 is broken if:<br><br>
+        <ul class="list">
+          <li style="padding-bottom:5px">There are more than 16 clicks between (frame of first click) and (frame of first click) + floor(fps).</li>
+        </ul>
+      </p1>
+      <br>
+       <p1 class="p1">
+        Rule 2 is broken if:<br><br>
+        <ul class="list">
+          <li style="padding-bottom:5px">There are more than 3 clicks on any given frame.</li>
+        </ul>
+      </p1>
+       <br>
+       <p1 class="p1">
+        Rule 3 is broken if:<br><br>
+        <ul class="list">
+          <li style="padding-bottom:5px">(Number of clicks in stint - 1) / [(frame of last click - frame of first click) / framerate] > 48.</li>
+        </ul>
+      </p1>
+    </div>
     </div>
     <div id="output" class="outputBox">
        <h2>
@@ -146,48 +216,6 @@
       <img class="cross" id="cross1" src="./img/cross.png" alt="cross">
       <img class="cross" id="cross2" src="./img/cross.png" alt="cross2">
     </div>
-    <div id="help-box" data-closeable>
-      <button id="close-button" data-close>
-        <span> &#10006; </span>
-      </button>
-      <h3>
-        Upload format
-      </h3>
-      <p1 class="p1">
-        This tool requires macros to be in plain text form. An example of acceptable
-         form is:<br><br>60<br>28 1 0<br>58 0 0<br>72 1 0<br>104 0 0<br>148 1 0<br>
-         172 0 0<br>202 1 0<br>264 0 0<br>. . .<br>
-      </p1>
-      <p2 class="p2">
-        <br>You can convert a macro to plain text using 
-        <a href="https://matcool.github.io/gd-macro-converter/">
-          Mat's macro converter
-        </a> or <br>
-        <a href="https://conv.nattie.dev/">
-          Nattie's macro converter.
-        </a> 
-      </p2>
-    </div>
-    <div id="help-box-2" data-closeable>
-      <button id="close-button-2" data-close>
-        <span> &#10006; </span>
-      </button>
-      <h3>
-        ILL CPS Rules
-      </h3>
-      <p1 class="p1">
-        The level must not include sections where clicks per second would exceed:<br><br>
-        <ul class="list">
-          <li style="padding-bottom:5px">16 clicks in a second.</li>
-          <li style="padding-bottom:5px">3 clicks in a frame.</li>
-          <li style="padding-bottom:5px">A rate of 48 cps in any stint of 5 or more clicks.</li>
-        </ul>
-      </p1>
-      <p2 class="p2">
-        <br><br>This program checks if the above rules are satisfied for both players in a macro.
-        <br><br>If they're not, it will tell you what frames the violations occur at.
-      </p2>
-    </div>
     <p id="invalid-text">
       An error occured while parsing the macro. Please make sure your macro follows the required format.
     </p>
@@ -203,34 +231,6 @@
      <p class="dark">
     Dark mode by argx
   </p>
-   <div id="help-box-3" data-closeable>
-      <button id="close-button-3" data-close>
-        <span> &#10006; </span>
-      </button>
-      <h3>
-        How each rule is calculated
-      </h3>
-      <p1 class="p1">
-        Rule 1 is broken if:<br><br>
-        <ul class="list">
-          <li style="padding-bottom:5px">There are more than 16 clicks between (frame of first click) and (frame of first click) + floor(fps).</li>
-        </ul>
-      </p1>
-      <br>
-       <p1 class="p1">
-        Rule 2 is broken if:<br><br>
-        <ul class="list">
-          <li style="padding-bottom:5px">There are more than 3 clicks on any given frame.</li>
-        </ul>
-      </p1>
-       <br>
-       <p1 class="p1">
-        Rule 3 is broken if:<br><br>
-        <ul class="list">
-          <li style="padding-bottom:5px">(Number of clicks in stint - 1) / [(frame of last click - frame of first click) / framerate] > 48.</li>
-        </ul>
-      </p1>
-    </div>
   </main>
   <script
     src="./index.js"></script>

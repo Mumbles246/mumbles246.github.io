@@ -215,7 +215,7 @@ h2{
 .p2results{
   position:relative;
   bottom:110px;
-  left:40px;
+  left:30px;
   width:580px;
   height:100px;
 }
@@ -350,7 +350,7 @@ h2{
   position:relative;
   width:550px;
   height:400px;
-  bottom:1103px;
+  bottom: 500px;
   background-color: var(--bg-secondary);
   border: thin solid var(--border-color);
   border-width: 1.5px;
@@ -397,7 +397,7 @@ h3{
   position:relative;
   width:550px;
   height:400px;
-  bottom:1103px;
+  bottom: 500px;
   background-color: var(--bg-secondary);
   border: thin solid var(--border-color);
   border-width: 1.5px;
@@ -439,7 +439,7 @@ h3{
   position:relative;
   width:550px;
   height:400px;
-  bottom:1103px;
+  bottom:500px;
   background-color: var(--bg-secondary);
   border: thin solid var(--border-color);
   border-width: 1.5px;
@@ -464,7 +464,7 @@ h3{
 
 #invalid-text{
   position:relative;
-  bottom:730px;
+  bottom:1145px;
   width:485px;
   font-size: 17px;
   font-weight:600;
@@ -480,7 +480,7 @@ h3{
 
 #fps-text{
   position:relative;
-  bottom:1550px;
+  bottom:1590px;
   left:590px;
   width:100px;
   word-break: break-all;
