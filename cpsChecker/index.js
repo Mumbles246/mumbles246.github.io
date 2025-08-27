@@ -78,8 +78,8 @@ document.getElementById('checkButton').addEventListener('click', async () =>{
     reportP1SwiftInfo();
     reportP2SwiftInfo();
     document.getElementById('totalswifttext').textContent = 'Total swift clicks: ' + (p1SwiftClicks.length + p2SwiftClicks.length);
-    document.getElementById('totalinverseswifttext').textContent = 'Total inverse swift clicks: ' + (p1InverseSwiftClicks.length + p2InverseSwiftClicks.length);
-    document.getElementById('totalswiftandinversetext').textContent = 'Total swift and inverse swift clicks: ' + (p1SwiftClicks.length + p2SwiftClicks.length + p1InverseSwiftClicks.length + p2InverseSwiftClicks.length);
+    document.getElementById('totalinverseswifttext').textContent = 'Total swift releases: ' + (p1InverseSwiftClicks.length + p2InverseSwiftClicks.length);
+    document.getElementById('totalswiftandinversetext').textContent = 'Total swift clicks and releases: ' + (p1SwiftClicks.length + p2SwiftClicks.length + p1InverseSwiftClicks.length + p2InverseSwiftClicks.length);
 
     disable();
 
@@ -123,7 +123,7 @@ function reportP1SwiftInfo(){
     }
     document.getElementById('p1swiftsbox').value = document.getElementById('p1swiftsbox').value + "]";
 
-    document.getElementById('p1ist').textContent = 'Player 1 inverse swift clicks: ' + p1InverseSwiftClicks.length;
+    document.getElementById('p1ist').textContent = 'Player 1 swift releases: ' + p1InverseSwiftClicks.length;
     document.getElementById('p1inverseswiftsbox').value = '';
     document.getElementById('p1inverseswiftsbox').value = document.getElementById('p1inverseswiftsbox').value + "[";
     for(var i = 0; i < p1InverseSwiftClicks.length; i++){
@@ -147,7 +147,7 @@ function reportP2SwiftInfo(){
     }
     document.getElementById('p2swiftsbox').value = document.getElementById('p2swiftsbox').value + "]";
 
-    document.getElementById('p2ist').textContent = 'Player 2 inverse swift clicks: ' + p2InverseSwiftClicks.length;
+    document.getElementById('p2ist').textContent = 'Player 2 swift releases: ' + p2InverseSwiftClicks.length;
     document.getElementById('p2inverseswiftsbox').value = '';
     document.getElementById('p2inverseswiftsbox').value = document.getElementById('p2inverseswiftsbox').value + "[";
     for(var i = 0; i < p2InverseSwiftClicks.length; i++){
