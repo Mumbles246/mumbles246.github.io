@@ -129,7 +129,7 @@ button:hover{
   left: 730px;
   background: var(--bg-secondary);
   width:620px;
-  height:650px;
+  height:1150px;
   display:block;
   border: 1px solid var(--border-color);
 }
@@ -172,8 +172,7 @@ h2{
   position:relative;
   background: var(--bg-secondary);
   width:110px;
-  left:730px;
-  bottom:1070px;
+  bottom: 90px;
   padding:5px;
   font-size: 30px;
   color: var(--text-primary);
@@ -182,7 +181,7 @@ h2{
 .outArea1{
   z-index: 1000;
   position:relative;
-  top:50px;
+  top:15px;
   left:30px;
   width:560px;
   height:100px;
@@ -194,7 +193,7 @@ h2{
 
 .p1results{
   position:relative;
-  bottom:75px;
+  bottom:110px;
   left:30px;
   width:580px;
   height:100px;
@@ -203,7 +202,7 @@ h2{
 .outArea2{
   z-index: 1000;
   position:relative;
-  top:50px;
+  top:15px;
   left:30px;
   width:560px;
   height:100px;
@@ -215,7 +214,7 @@ h2{
 
 .p2results{
   position:relative;
-  bottom:75px;
+  bottom:110px;
   left:40px;
   width:580px;
   height:100px;
@@ -224,7 +223,7 @@ h2{
 .img2{
   position:relative;
   left:120;
-  bottom:15;
+  bottom:50;
   pointer-events:fill;
 }
 
@@ -235,13 +234,13 @@ h2{
 .retryText{
   position:relative;
   left:830px;
-  bottom:547px;
+  bottom:994.5px;
 }
 
 .img3{
   position:relative;
   left:410;
-  bottom:110;
+  bottom:145;
   width:70;
   pointer-events:none;
 }
@@ -267,7 +266,7 @@ h2{
 .downloadText{
   position:relative;
   left:1130px;
-  bottom:565px;
+  bottom:1010px;
 }
 
 .checkmark{
@@ -278,14 +277,14 @@ h2{
 #check1{
   position:relative;
   left:930px;
-  bottom:1065px;
+  bottom:1512px;
   visibility: hidden;
 }
 
 #check2{
   position:relative;
   left:903px;
-  bottom:865px;
+  bottom:1312px;
   visibility: hidden;
 }
 
@@ -297,14 +296,14 @@ h2{
 #cross1{
   position:relative;
   left:930px;
-  bottom:1099px;
+  bottom:1542px;
   visibility:hidden;
 }
 
 #cross2{
   position:relative;
   left:902px;
-  bottom:897px;
+  bottom:1342px;
   visibility: hidden;
 }
 
@@ -481,11 +480,126 @@ h3{
 
 #fps-text{
   position:relative;
-  bottom:1070px;
+  bottom:1550px;
   left:590px;
   width:100px;
   word-break: break-all;
   display: none;
+}
+
+#checkboxes{
+  position:relative;
+  bottom:75px;
+  left:25px;
+  display: none;
+}
+
+.p1swiftsarea{
+  z-index: 1000;
+  position:relative;
+  top:-15px;
+  left:30px;
+  width:560px;
+  height:30px;
+  resize:none;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  visibility:hidden;
+}
+
+.p1swiftstext{
+  position: relative;
+  left: 30px;
+  bottom: 70px;
+  visibility:hidden;
+}
+
+.p1inverseswiftsarea{
+  z-index: 1000;
+  position:relative;
+  top:10px;
+  left:30px;
+  width:560px;
+  height:30px;
+  resize:none;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  visibility:hidden;
+}
+
+.p1inverseswiftstext{
+  position: relative;
+  left: 30px;
+  bottom: 45px;
+  visibility:hidden;
+}
+
+.p2swiftsarea{
+  z-index: 1000;
+  position:relative;
+  top:35px;
+  left:30px;
+  width:560px;
+  height:30px;
+  resize:none;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  visibility:hidden;
+}
+
+.p2swiftstext{
+  position: relative;
+  left: 30px;
+  bottom: 20px;
+  visibility:hidden;
+}
+
+.p2inverseswiftsarea{
+  z-index: 1000;
+  position:relative;
+  top:60px;
+  left:30px;
+  width:560px;
+  height:30px;
+  resize:none;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  visibility:hidden;
+}
+
+.p2inverseswiftstext{
+  position: relative;
+  left: 30px;
+  top: 5px;
+  visibility:hidden;
+}
+
+#totalswifttext{
+  position: relative;
+  left: 30px;
+  top: 70px;
+  font-weight: bold;
+  visibility: hidden;
+}
+
+#totalinverseswifttext{
+  position: relative;
+  left: 30px;
+  top: 90px;
+  font-weight: bold;
+  visibility: hidden;
+}
+
+#totalswiftandinversetext{
+  position: relative;
+  left: 30px;
+  top: 110px;
+  font-weight: bold;
+  visibility: hidden;
 }
 
 a {
@@ -592,6 +706,6 @@ a:hover {
 /* Update all color transitions */
 h1, .inputBox, .pasteArea, button, .uploadButton, .outputBox, h2, 
 .outArea1, .outArea2, #help-box, #help-box-2, #close-button, #close-button-2,
-a, #invalid-text {
+a, #invalid-text, .p1swiftsarea {
   transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
 }

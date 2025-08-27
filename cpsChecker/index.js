@@ -34,6 +34,13 @@ var p2Rule2MinCull = [];
 var p1Rule3MinCull = [];
 var p2Rule3MinCull = [];
 
+var p1SwiftClicks = [];
+var p1InverseSwiftClicks = [];
+var p2SwiftClicks = [];
+var p2InverseSwiftClicks = [];
+var p1SeparatedMacro = [];
+var p2SeparatedMacro = [];
+
 var framerate;
 var macroName = '<not provided>';
 
@@ -54,16 +61,25 @@ document.getElementById('checkButton').addEventListener('click', async () =>{
     document.getElementById('invalid-text').style.display = 'none';
 
     parseInputsToP1P2Array(macroTxt);
+    splitMacro(macroTxt);
+    extractSwiftsFromP1Macro();
+    extractSwiftsFromP2Macro();
 
     document.getElementById('fps-text').textContent = 'FPS: ' + framerate;
     document.getElementById('fps-text').style.display = 'block';
     document.getElementById('fps-text').style.fontWeight = 'bold';
+    document.getElementById('checkboxes').style.display = 'block';
 
     checkP1CpsBreaks();
     checkP2CpsBreaks();
 
     reportP1Results();
     reportP2Results();
+    reportP1SwiftInfo();
+    reportP2SwiftInfo();
+    document.getElementById('totalswifttext').textContent = 'Total swift clicks: ' + (p1SwiftClicks.length + p2SwiftClicks.length);
+    document.getElementById('totalinverseswifttext').textContent = 'Total inverse swift clicks: ' + (p1InverseSwiftClicks.length + p2InverseSwiftClicks.length);
+    document.getElementById('totalswiftandinversetext').textContent = 'Total swift and inverse swift clicks: ' + (p1SwiftClicks.length + p2SwiftClicks.length + p1InverseSwiftClicks.length + p2InverseSwiftClicks.length);
 
     disable();
 
@@ -94,6 +110,54 @@ document.getElementById('downloadButton').addEventListener('click', async () =>{
 document.getElementById('refreshButton').addEventListener('click', async () =>{
     location.reload();
 });
+
+function reportP1SwiftInfo(){
+    document.getElementById('p1st').textContent = 'Player 1 swift clicks: ' + p1SwiftClicks.length;
+    document.getElementById('p1swiftsbox').value = '';
+    document.getElementById('p1swiftsbox').value = document.getElementById('p1swiftsbox').value + "[";
+    for(var i = 0; i < p1SwiftClicks.length; i++){
+        document.getElementById('p1swiftsbox').value = document.getElementById('p1swiftsbox').value + p1SwiftClicks[i];
+        if(i < p1SwiftClicks.length-1){
+            document.getElementById('p1swiftsbox').value = document.getElementById('p1swiftsbox').value + ", ";
+        }
+    }
+    document.getElementById('p1swiftsbox').value = document.getElementById('p1swiftsbox').value + "]";
+
+    document.getElementById('p1ist').textContent = 'Player 1 inverse swift clicks: ' + p1InverseSwiftClicks.length;
+    document.getElementById('p1inverseswiftsbox').value = '';
+    document.getElementById('p1inverseswiftsbox').value = document.getElementById('p1inverseswiftsbox').value + "[";
+    for(var i = 0; i < p1InverseSwiftClicks.length; i++){
+        document.getElementById('p1inverseswiftsbox').value = document.getElementById('p1inverseswiftsbox').value + p1InverseSwiftClicks[i];
+        if(i < p1InverseSwiftClicks.length-1){
+            document.getElementById('p1inverseswiftsbox').value = document.getElementById('p1inverseswiftsbox').value + ", ";
+        }
+    }
+    document.getElementById('p1inverseswiftsbox').value = document.getElementById('p1inverseswiftsbox').value + "]";
+}
+
+function reportP2SwiftInfo(){
+    document.getElementById('p2st').textContent = 'Player 2 swift clicks: ' + p2SwiftClicks.length;
+    document.getElementById('p2swiftsbox').value = '';
+    document.getElementById('p2swiftsbox').value = document.getElementById('p2swiftsbox').value + "[";
+    for(var i = 0; i < p2SwiftClicks.length; i++){
+        document.getElementById('p2swiftsbox').value = document.getElementById('p2swiftsbox').value + p2SwiftClicks[i];
+        if(i < p2SwiftClicks.length-1){
+            document.getElementById('p2swiftsbox').value = document.getElementById('p2swiftsbox').value + ", ";
+        }
+    }
+    document.getElementById('p2swiftsbox').value = document.getElementById('p2swiftsbox').value + "]";
+
+    document.getElementById('p2ist').textContent = 'Player 2 inverse swift clicks: ' + p2InverseSwiftClicks.length;
+    document.getElementById('p2inverseswiftsbox').value = '';
+    document.getElementById('p2inverseswiftsbox').value = document.getElementById('p2inverseswiftsbox').value + "[";
+    for(var i = 0; i < p2InverseSwiftClicks.length; i++){
+        document.getElementById('p2inverseswiftsbox').value = document.getElementById('p2inverseswiftsbox').value + p2InverseSwiftClicks[i];
+        if(i < p2InverseSwiftClicks.length-1){
+            document.getElementById('p2inverseswiftsbox').value = document.getElementById('p2inverseswiftsbox').value + ", ";
+        }
+    }
+    document.getElementById('p2inverseswiftsbox').value = document.getElementById('p2inverseswiftsbox').value + "]";
+}
 
 function reportP1Results(){
     document.getElementById('outbox1').value = '';
@@ -356,6 +420,56 @@ function parseInputsToP1P2Array(macroTxt){
     }
 }
 
+function splitMacro(macroTxt){
+    const lineArray = macroTxt.trim().split('\n');
+    for(var i = 1; i < lineArray.length; i++){
+        var lineAsInts1 = lineArray[i].trim().split(/(\s+)/);
+        var lineAsInts= lineAsInts1.filter(n => isANumber(n));
+        if(parseInt(lineAsInts[1],10) == 1 && parseInt(lineAsInts[2]) == 0){ //P1 click
+            p1SeparatedMacro.push(parseInt(lineAsInts[0],10) + " c");
+        }
+        else if(parseInt(lineAsInts[1],10) == 0 && parseInt(lineAsInts[2]) == 0){ //P1 release
+            p1SeparatedMacro.push(parseInt(lineAsInts[0],10) + " r");
+        }
+        else if(parseInt(lineAsInts[1],10) == 1 && parseInt(lineAsInts[2]) == 1){ //P2 click
+            p2SeparatedMacro.push(parseInt(lineAsInts[0],10) + " c");
+        }
+        else if(parseInt(lineAsInts[1],10) == 0 && parseInt(lineAsInts[2]) == 1){ //P2 release
+            p2SeparatedMacro.push(parseInt(lineAsInts[0],10) + " r");
+        }
+    }
+}
+
+function extractSwiftsFromP1Macro(){
+    for(var i = 0; i < p1SeparatedMacro.length - 1; i++){
+        var lineSplit1 = p1SeparatedMacro[i].trim().split(/(\s+)/);
+        var lineSplit2 = p1SeparatedMacro[i+1].trim().split(/(\s+)/);
+        if(parseInt(lineSplit1[0], 10) == parseInt(lineSplit2[0], 10)){ // If the next action happens on the same frame as the first
+            if(lineSplit1[2] === "c" && lineSplit2[2] === "r"){ // Swift! (2 because 1 is a space)
+                p1SwiftClicks.push(parseInt(lineSplit1[0], 10));
+            }
+            if(lineSplit1[2] === "r" && lineSplit2[2] === "c"){ // Inverse swift! (2 because 1 is a space)
+                p1InverseSwiftClicks.push(parseInt(lineSplit1[0], 10));
+            }
+        }
+    }
+}
+
+function extractSwiftsFromP2Macro(){
+    for(var i = 0; i < p2SeparatedMacro.length - 1; i++){
+        var lineSplit1 = p2SeparatedMacro[i].trim().split(/(\s+)/);
+        var lineSplit2 = p2SeparatedMacro[i+1].trim().split(/(\s+)/);
+        if(parseInt(lineSplit1[0], 10) == parseInt(lineSplit2[0], 10)){ // If the next action happens on the same frame as the first
+            if(lineSplit1[2] === "c" && lineSplit2[2] === "r"){ // Swift! (2 because 1 is a space)
+                p2SwiftClicks.push(parseInt(lineSplit1[0], 10));
+            }
+            if(lineSplit1[2] === "r" && lineSplit2[2] === "c"){ // Inverse swift! (2 because 1 is a space)
+                p2InverseSwiftClicks.push(parseInt(lineSplit1[0], 10));
+            }
+        }
+    }
+}
+
 document.getElementById('upload').addEventListener('change', async () =>{
     const fr = new FileReader();
     const file = document.getElementById('in').files[0];
@@ -367,6 +481,35 @@ document.getElementById('upload').addEventListener('change', async () =>{
         document.getElementById('noFile').style.fontSize = '15px';
         macroName = file.name.split('.').slice(0,-1).join('.');
     });     
+});
+
+document.getElementById('showSwiftsBox').addEventListener('change', async () =>{
+    if(document.getElementById('showSwiftsBox').checked == true){
+        document.getElementById('p1swiftsbox').style.visibility='visible';
+        document.getElementById('p1st').style.visibility='visible';
+        document.getElementById('p1inverseswiftsbox').style.visibility='visible';
+        document.getElementById('p1ist').style.visibility='visible';
+        document.getElementById('p2swiftsbox').style.visibility='visible';
+        document.getElementById('p2st').style.visibility='visible';
+        document.getElementById('p2inverseswiftsbox').style.visibility='visible';
+        document.getElementById('p2ist').style.visibility='visible';
+        document.getElementById('totalswifttext').style.visibility='visible';
+        document.getElementById('totalinverseswifttext').style.visibility='visible';
+        document.getElementById('totalswiftandinversetext').style.visibility='visible';
+    }   
+    else{
+        document.getElementById('p1swiftsbox').style.visibility='hidden';
+        document.getElementById('p1st').style.visibility='hidden';
+        document.getElementById('p1inverseswiftsbox').style.visibility='hidden';
+        document.getElementById('p1ist').style.visibility='hidden';
+        document.getElementById('p2swiftsbox').style.visibility='hidden';
+        document.getElementById('p2st').style.visibility='hidden';
+        document.getElementById('p2inverseswiftsbox').style.visibility='hidden';
+        document.getElementById('p2ist').style.visibility='hidden';
+        document.getElementById('totalswifttext').style.visibility='hidden';
+        document.getElementById('totalinverseswifttext').style.visibility='hidden';
+        document.getElementById('totalswiftandinversetext').style.visibility='hidden';
+    }
 });
 
 document.getElementById('help-area').addEventListener('click', async () =>{
