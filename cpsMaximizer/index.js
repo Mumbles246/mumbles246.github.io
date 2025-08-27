@@ -274,7 +274,7 @@ function derive(inputFrames) {
                 break;
             }
         }
-        if (numClicks > 15) {
+        if (numClicks > 16) { // 15 with old rules
             return true;
         }
     }
@@ -302,7 +302,7 @@ function derive(inputFrames) {
         }
 
         if (inputFramesWithinASecond.length >= 5) {  // Ignores stints of less than 5 clicks
-        var possibleNumberOfStints = Math.min(inputFramesWithinASecond.length - 4, 11); // Number of stints to check per set of clicks within a second
+        var possibleNumberOfStints = Math.min(inputFramesWithinASecond.length - 4, 12); // Number of stints to check per set of clicks within a second. 11 for 15.
         // Don't need to worry about stints longer than 15 clicks, as if there are more than 15 clicks within a second it will be caught by the rule 1 check
 
         for (var j = 0, noClicks = 5; j < possibleNumberOfStints; j++, noClicks++) {
@@ -311,7 +311,7 @@ function derive(inputFrames) {
             var timeBetweenClicks = parseFloat(stintEnd - stintStart) / framerate;
             var cps = noClicks / timeBetweenClicks; // Actual number of clicks instead of 5
 
-            if (cps > 45) {
+            if (cps > 48) { // 45 for old rules
                 return true;
             }
         }
