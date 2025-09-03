@@ -1,0 +1,238 @@
+<head>
+  <link rel="stylesheet" href="index.css">
+  <title> CPS Checker </title>
+</head>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MP4T4YLS77"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-MP4T4YLS77');
+</script>
+<body>
+  <main>
+  <div class="title">
+    <h1>CPS Checker</h1>
+  </div>
+  <div class="description">
+    <p>This site allows you to check if a macro breaks CPS rules as defined in the ILL rules document.<br>
+      <p2 id="second-line">
+        <b>Note:</b> just because a macro violates CPS rules, doesn't necessarily mean the level does. <br><br><br>
+      </p2> 
+      <p3 id="third-line">
+        <b>Beta version to test timewarp trigger support </b>
+      </p3> 
+    </p>
+  </div>
+  <div class="inputBox" id="ib">
+    <div class="inputBoxInner">
+    <div>
+      <label id="upload" class="uploadButton">
+        <input type="file" id="in" accept=".txt"/>
+        Upload file
+        </label>
+    </div>
+    <div class="pasteText">
+      <p>
+      or paste text:
+      </p>
+    </div>
+    <textArea id="textbox" class="pasteArea" autofocus>
+    </textArea>
+    <div id="noFile" class="noFileText">
+      <p>
+        No file selected
+      </p>
+    </div>
+  </div>
+  <div class="img" id="checkButton">
+    <img class="arrow" src="./img/arrow.png" alt="Arrow">
+    <img class="hoverArrow" src="./img/arrowHover.png" alt="ArrowHovered">
+  </div>
+  <p class="submitText">
+    Check CPS
+  </p>
+  <p class="made-by">
+    Made by EDSJustin, Flora and jojo989
+  </p>
+  <div id="help-area">
+    <img class="question-mark" id="question1" src="./img/help.png" alt="help">
+    <p id="help-text">
+      Help
+    </p>
+  </div>
+  <div id="help-area-2">
+    <img class="question-mark" id="question2" src="./img/help.png" alt="help2">
+    <p id="help-text-2">
+      CPS rules
+    </p>
+  </div>
+  <div id="help-area-3">
+    <img class="question-mark" id="question3" src="./img/help.png" alt="help3">
+    <p id="help-text-3">
+      Formula
+    </p>
+  </div>
+   <div id="help-box" data-closeable>
+      <button id="close-button" data-close>
+        <span> &#10006; </span>
+      </button>
+      <h3>
+        Upload format
+      </h3>
+      <p1 class="p1">
+        This tool requires macros to be in plain text form. An example of acceptable
+         form is:<br><br>60<br>28 1 0<br>58 0 0<br>72 1 0<br>104 0 0<br>148 1 0<br>
+         172 0 0<br>202 1 0<br>264 0 0<br>. . .<br>
+      </p1>
+      <p2 class="p2">
+        <br>You can convert a macro to plain text using 
+        <a href="https://matcool.github.io/gd-macro-converter/">
+          Mat's macro converter
+        </a> or <br>
+        <a href="https://conv.nattie.dev/">
+          Nattie's macro converter.
+        </a> 
+      </p2>
+    </div>
+     <div id="help-box-2" data-closeable>
+      <button id="close-button-2" data-close>
+        <span> &#10006; </span>
+      </button>
+      <h3>
+        ILL CPS Rules
+      </h3>
+      <p1 class="p1">
+        The level must not include sections where clicks per second would exceed:<br><br>
+        <ul class="list">
+          <li style="padding-bottom:5px">16 clicks in a second.</li>
+          <li style="padding-bottom:5px">3 clicks in a frame.</li>
+          <li style="padding-bottom:5px">A rate of 48 cps in any stint of 5 or more clicks.</li>
+        </ul>
+      </p1>
+      <p2 class="p2">
+        <br><br>This program checks if the above rules are satisfied for both players in a macro.
+        <br><br>If they're not, it will tell you what frames the violations occur at.
+      </p2>
+    </div>
+    <div id="help-box-3" data-closeable>
+      <button id="close-button-3" data-close>
+        <span> &#10006; </span>
+      </button>
+      <h3>
+        How each rule is calculated
+      </h3>
+      <p1 class="p1">
+        Rule 1 is broken if:<br><br>
+        <ul class="list">
+          <li style="padding-bottom:5px">There are more than 16 clicks between (frame of first click) and (frame of first click) + floor(fps).</li>
+        </ul>
+      </p1>
+      <br>
+       <p1 class="p1">
+        Rule 2 is broken if:<br><br>
+        <ul class="list">
+          <li style="padding-bottom:5px">There are more than 3 clicks on any given frame.</li>
+        </ul>
+      </p1>
+       <br>
+       <p1 class="p1">
+        Rule 3 is broken if:<br><br>
+        <ul class="list">
+          <li style="padding-bottom:5px">(Number of clicks in stint - 1) / [(frame of last click - frame of first click) / framerate] > 48.</li>
+        </ul>
+      </p1>
+    </div>
+    </div>
+    <div id="output" class="outputBox">
+       <h2>
+        Results
+      </h2>
+      <textArea id="outbox1" class="outArea1" readonly>
+      </textArea>
+      <p class="p1results">
+        Player 1 CPS violations:
+      </p>
+      <textArea id="outbox2" class="outArea2" readonly>
+      </textArea>
+      <p class="p2results">
+        Player 2 CPS violations:
+      </p>
+      <div class="img2" id="refreshButton">
+        <img class="arrow" src="./img/arrow2.png" alt="Arrow2">
+        <img class="hoverArrow" src="./img/arrow2Hover.png" alt="Arrow2Hovered">
+      </div>
+      <div class="img3" id="downloadButton">
+        <img class="arrow3" src="./img/arrow3.png" alt="Arrow3">
+        <img class="hoverArrow3" src="./img/arrow3Hover.png" alt="Arrow3Hovered">
+      </div>
+      <div id = "checkboxes">
+    <input type="checkbox" id="showSwiftsBox" name="showSwiftsBox" value=1>
+    <label for="showSwiftsBox">Show swift click info</label><br>
+    </div>
+     <textArea id="p1swiftsbox" class="p1swiftsarea" readonly>
+      </textArea>
+      <p id="p1st" class="p1swiftstext">
+        Player 1 swift clicks:
+      </p>
+      <textArea id="p1inverseswiftsbox" class="p1inverseswiftsarea" readonly>
+      </textArea>
+      <p id="p1ist" class="p1inverseswiftstext">
+        Player 1 inverse swift clicks:
+      </p>
+       <textArea id="p2swiftsbox" class="p2swiftsarea" readonly>
+      </textArea>
+      <p id="p2st" class="p2swiftstext">
+        Player 2 swift clicks:
+      </p>
+       <textArea id="p2inverseswiftsbox" class="p2inverseswiftsarea" readonly>
+      </textArea>
+      <p id="p2ist" class="p2inverseswiftstext">
+        Player 2 inverse swift clicks:
+      </p>
+      <p id="totalswifttext">
+        Total swift clicks:
+      </p>
+      <p id="totalinverseswifttext">
+        Total inverse swift clicks:
+      </p>
+      <p id="totalswiftandinversetext">
+        Total swift and inverse swift clicks:
+      </p>
+    </div>
+    <p class="retryText">
+      Check another macro
+    </p>
+    <p class="downloadText">
+      Download results
+    </p>
+    <div>
+      <img class="checkmark" id="check1" src="./img/check.png" alt="check">
+      <img class="checkmark" id="check2" src="./img/check.png" alt="check2">
+    </div>
+    <div>
+      <img class="cross" id="cross1" src="./img/cross.png" alt="cross">
+      <img class="cross" id="cross2" src="./img/cross.png" alt="cross2">
+    </div>
+    <p id="invalid-text">
+      An error occured while parsing the macro. Please make sure your macro follows the required format.
+    </p>
+    <p id="fps-text">
+      FPS: N/A
+    </p>
+
+    <div id="theme-toggle">
+      <button id="theme-toggle-button">
+        Mode: Dark
+      </button>
+    </div>
+     <p class="dark">
+    Dark mode by argx
+  </p>
+  </main>
+  <script
+    src="./index.js"></script>
+
+</body>
