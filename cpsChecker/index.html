@@ -75,6 +75,30 @@
       Formula
     </p>
   </div>
+   <div id="help-area-4">
+    <img class="question-mark" id="question4" src="./img/help.png" alt="help4">
+    <p id="help-text-4">
+      Timewarp
+    </p>
+  </div>
+    <div id="help-box-4" data-closeable>
+      <button id="close-button-4" data-close>
+        <span> &#10006; </span>
+      </button>
+      <h3>
+        Adding timewarps
+      </h3>
+      <p1 class="p1">
+        You can add timewarps to a macro by specifying the frame it is activated, and the timewarp factor. Examples:
+        <br><br>240<br>100 T = 2<br>125 1 0<br>130 0 0<br>135 1 0<br>140 0 0<br>146 T = 1.5<br>150 1 0<br>155 0 0<br>. . .<br>
+      </p1>
+      <p2 class="p2">
+        <br>Note that this feature is experimental. Contact me if there are any issues.
+      </p2>
+      <p1 class="p1" id="secondExample">
+        <br><br>240<br>100 T = 2<br>146 T = 1.5<br>125 1 0<br>130 0 0<br>135 1 0<br>140 0 0<br>150 1 0<br>155 0 0<br>. . .<br>
+      </p1>
+    </div>
    <div id="help-box" data-closeable>
       <button id="close-button" data-close>
         <span> &#10006; </span>
@@ -169,7 +193,7 @@
         <img class="hoverArrow3" src="./img/arrow3Hover.png" alt="Arrow3Hovered">
       </div>
       <div id = "checkboxes">
-    <input type="checkbox" id="showSwiftsBox" name="showSwiftsBox" value=1>
+    <input type="checkbox" id="showSwiftsBox" name="showSwiftsBox" value=1 checked>
     <label for="showSwiftsBox">Show swift click info</label><br>
     </div>
      <textArea id="p1swiftsbox" class="p1swiftsarea" readonly>

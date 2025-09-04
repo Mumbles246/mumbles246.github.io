@@ -41,6 +41,9 @@ var p2InverseSwiftClicks = [];
 var p1SeparatedMacro = [];
 var p2SeparatedMacro = [];
 
+var timewarpInfo = [];
+var currentTimewarp = 1;
+
 var framerate;
 var macroName = '<not provided>';
 
@@ -69,6 +72,18 @@ document.getElementById('checkButton').addEventListener('click', async () =>{
     document.getElementById('fps-text').style.display = 'block';
     document.getElementById('fps-text').style.fontWeight = 'bold';
     document.getElementById('checkboxes').style.display = 'block';
+    document.getElementById('p1swiftsbox').style.visibility='visible';
+
+        document.getElementById('p1st').style.visibility='visible';
+        document.getElementById('p1inverseswiftsbox').style.visibility='visible';
+        document.getElementById('p1ist').style.visibility='visible';
+        document.getElementById('p2swiftsbox').style.visibility='visible';
+        document.getElementById('p2st').style.visibility='visible';
+        document.getElementById('p2inverseswiftsbox').style.visibility='visible';
+        document.getElementById('p2ist').style.visibility='visible';
+        document.getElementById('totalswifttext').style.visibility='visible';
+        document.getElementById('totalinverseswifttext').style.visibility='visible';
+        document.getElementById('totalswiftandinversetext').style.visibility='visible';
 
     checkP1CpsBreaks();
     checkP2CpsBreaks();
@@ -265,9 +280,34 @@ function checkP2CpsBreaks(){
 }
 
 function derive(inputFrames, breakArray) {
+    var hasTimeWarps = timewarpInfo.length > 0;
     for (var i = 0; i < inputFrames.length; i++) {
         var firstClickFrame = inputFrames[i];
-        var frameOneSecondLater = firstClickFrame + Math.floor(framerate);
+        var timewarpFactor = 1;
+        var indexChecked = 0;
+        var runningTimeTotal = 0;
+        var bottomThing = firstClickFrame;
+        if(hasTimeWarps){
+            timewarpFactor = Math.max(determineTimewarpFactor(firstClickFrame)[0], 1); 
+            indexChecked = determineTimewarpFactor(firstClickFrame)[1];
+        }
+        var frameOneSecondLater = firstClickFrame + timewarpFactor*framerate;
+        var previousTimewarpFactor = timewarpFactor;
+        if(indexChecked < timewarpInfo.length){
+            while(timewarpInfo[indexChecked][0] < frameOneSecondLater && indexChecked < timewarpInfo.length){
+                var framesLeft = frameOneSecondLater - timewarpInfo[indexChecked][0];
+                framesLeft *= (Math.max(timewarpInfo[indexChecked][1], 1))/previousTimewarpFactor;
+                frameOneSecondLater = timewarpInfo[indexChecked][0] + framesLeft;
+                runningTimeTotal += (timewarpInfo[indexChecked][0] - bottomThing) / (previousTimewarpFactor * framerate);
+                bottomThing = timewarpInfo[indexChecked][0];
+                previousTimewarpFactor = Math.max(timewarpInfo[indexChecked][1], 1);
+                indexChecked++;
+                if(indexChecked >= timewarpInfo.length){
+                    break;
+                }
+            }
+        }
+        frameOneSecondLater = Math.floor(frameOneSecondLater);
         var numClicks = 0;
         var lastClickWithinTime = firstClickFrame;
         for (var j = 0; j < inputFrames.length; j++) {
@@ -282,24 +322,52 @@ function derive(inputFrames, breakArray) {
                 break;
             }
         }
-        var timeBetween = parseFloat((lastClickWithinTime - firstClickFrame)) / framerate;
+        runningTimeTotal += parseFloat((lastClickWithinTime - bottomThing)) / (previousTimewarpFactor * framerate);
+        //var timeBetween = parseFloat((lastClickWithinTime - firstClickFrame)) / framerate;
         if (numClicks > 16) { // Originally 15
             breakArray.push("- " + numClicks + " clicks in 1s: [frame " + firstClickFrame + " to " + frameOneSecondLater +
-                "]: (" + timeBetween.toFixed(3) + "s between first and last)\n");
+                "]: (" + runningTimeTotal.toFixed(3) + "s between first and last)\n");
         }
     }
 }
 
  function Derive(inputFrames, breakArrayRule2, breakArrayRule3, rule2Max, rule3Max, rule2Min, rule3Min) {
     var framesThatBreakRule2 = [];
+    var hasTimeWarps = timewarpInfo.length > 0;
     for (var i = 0; i < inputFrames.length; i++) {
         var min = true;
         var max = false;
         var _2break = false, _3break = false;
         inputFramesWithinASecond = [];
+
         var firstClickFrame = inputFrames[i];
-        var frameOneSecondLater = firstClickFrame + Math.floor(framerate);
+        var timewarpFactor = 1;
+        var indexChecked = 0;
+        var runningTimeTotal = 0;
+        var bottomThing = firstClickFrame;
+        if(hasTimeWarps){
+            timewarpFactor = Math.max(determineTimewarpFactor(firstClickFrame)[0], 1); 
+            indexChecked = determineTimewarpFactor(firstClickFrame)[1];
+        }
+        var frameOneSecondLater = firstClickFrame + timewarpFactor*framerate;
+        var previousTimewarpFactor = timewarpFactor;
         var latestClick = firstClickFrame;
+
+        if(indexChecked < timewarpInfo.length){
+            while(timewarpInfo[indexChecked][0] < frameOneSecondLater && indexChecked < timewarpInfo.length){
+                var framesLeft = frameOneSecondLater - timewarpInfo[indexChecked][0];
+                framesLeft *= (Math.max(timewarpInfo[indexChecked][1], 1))/previousTimewarpFactor;
+                frameOneSecondLater = timewarpInfo[indexChecked][0] + framesLeft;
+                runningTimeTotal += (timewarpInfo[indexChecked][0] - bottomThing) / (previousTimewarpFactor * framerate);
+                bottomThing = timewarpInfo[indexChecked][0];
+                previousTimewarpFactor = Math.max(timewarpInfo[indexChecked][1], 1);
+                indexChecked++;
+                if(indexChecked >= timewarpInfo.length){
+                    break;
+                }
+            }
+        }
+        frameOneSecondLater = Math.floor(frameOneSecondLater);
         
         for (var j = 0; j < inputFrames.length; j++) { // Retrieves all clicks up to a second after the click in question, including the one in question
             if (inputFrames[i + j] < frameOneSecondLater) {
@@ -317,18 +385,43 @@ function derive(inputFrames, breakArray) {
         for (var j = 0, noClicks = 5; j < possibleNumberOfStints; j++, noClicks++) {
             var stintStart = inputFramesWithinASecond[0];
             var stintEnd = inputFramesWithinASecond[j + 4];
-            var timeBetweenClicks = parseFloat(stintEnd - stintStart) / framerate;
-            var cps = (noClicks-1) / timeBetweenClicks; // Actual number of clicks instead of 5. Added minus 1
+
+            // Hopefully the magic
+            var timewarpFactor = 1;
+            var indexChecked = 0;
+            var runningTimeTotal = 0;
+            var bottomThing = stintStart;
+            if(hasTimeWarps){
+                timewarpFactor = Math.max(determineTimewarpFactor(stintStart)[0], 1); 
+                indexChecked = determineTimewarpFactor(stintStart)[1];
+            }
+            var previousTimewarpFactor = timewarpFactor;
+
+            if(indexChecked < timewarpInfo.length){
+                while(timewarpInfo[indexChecked][0] < stintEnd && indexChecked < timewarpInfo.length){
+                    runningTimeTotal += (timewarpInfo[indexChecked][0] - bottomThing) / (previousTimewarpFactor * framerate);
+                    bottomThing = timewarpInfo[indexChecked][0];
+                    previousTimewarpFactor = Math.max(timewarpInfo[indexChecked][1], 1);
+                    indexChecked++;
+                    if(indexChecked >= timewarpInfo.length){
+                        break;
+                    }
+                }
+            }
+            runningTimeTotal += parseFloat((stintEnd - bottomThing)) / (previousTimewarpFactor * framerate);
+
+            //var timeBetweenClicks = parseFloat(stintEnd - stintStart) / framerate;
+            var cps = (noClicks-1) / runningTimeTotal; // Actual number of clicks instead of 5. Added minus 1
 
             if (cps > 48) {
-                breakArrayRule3.push('- ' + cps.toFixed(3) + " cps rate for the " + noClicks + " click stint from frames " + stintStart + " to " + stintEnd + " (" + timeBetweenClicks.toFixed(3) + "s)\n");
+                breakArrayRule3.push('- ' + cps.toFixed(3) + " cps rate for the " + noClicks + " click stint from frames " + stintStart + " to " + stintEnd + " (" + runningTimeTotal.toFixed(3) + "s)\n");
                 _3break = true;
                 max = true;
                 min = false;
             }
         }
     }
-
+        // Rule 2 check
          var numberOfClicksOnSameFrame = 1;
          for (var j = 1; i + j < inputFrames.length; j++) { 
             if(inputFrames[i] == inputFrames[i + j]){
@@ -373,27 +466,62 @@ function derive(inputFrames, breakArray) {
     }
 }
 
+function determineTimewarpFactor(firstClickFrame){
+    if(timewarpInfo.length == 1){
+        if(firstClickFrame < timewarpInfo[0][0]) {
+            return [1, 0];
+        }
+        else{
+            return [timewarpInfo[0][1], 1];
+        }
+    }
+    else{
+        if(firstClickFrame < timewarpInfo[0][0]) {
+            return [1, 0];
+        }
+        for(var i = 0; i < timewarpInfo.length-1; i++){
+            if(firstClickFrame >= timewarpInfo[i][0] && firstClickFrame < timewarpInfo[i+1][0]) {
+                return [timewarpInfo[i][1], i+1];
+            }
+        }
+        return [timewarpInfo[timewarpInfo.length-1][1], timewarpInfo.length];
+    }
+}
+
 
 function validMacro(macro){
     const arrayOfLines = macro.trim().split('\n');
     if(arrayOfLines.length < 2){ return false; }
     for(var i = 0; i < arrayOfLines.length; i++){
-        var lineChoppedUp1 = arrayOfLines[i].trim().split(/(\s+)/);
-        var lineChoppedUp = lineChoppedUp1.filter(n => isANumber(n));
-        if(i == 0){
-           if(lineChoppedUp.length != 1 || !isANumber(lineChoppedUp[0])){
-            return false;
-           }
+        var potentialLine = arrayOfLines[i].trim();
+        if(matchesTimewarpRegex(potentialLine) && i > 0){
+            continue;
         }
         else{
-            if(lineChoppedUp.length != 3 || !isANumber(lineChoppedUp[0])
-            || !isANumber(lineChoppedUp[1]) || !isANumber(lineChoppedUp[2])){
+            var lineChoppedUp1 = arrayOfLines[i].trim().split(/(\s+)/);
+            var lineChoppedUp = lineChoppedUp1.filter(n => isANumber(n));
+            if(i == 0){
+            if(lineChoppedUp.length != 1 || !isANumber(lineChoppedUp[0])){
                 return false;
+            }
+            }
+            else{
+                if(lineChoppedUp.length != 3 || !isANumber(lineChoppedUp[0])
+                || !isANumber(lineChoppedUp[1]) || !isANumber(lineChoppedUp[2])){
+                    return false;
+                }
             }
         }
     }
     return true;
 }
+
+function matchesTimewarpRegex(str){
+    const pattern = new RegExp('^\\d+\\s+[Tt]\\s*=\\s*\\d+(\\.\\d+)?$');
+    //console.log(pattern.test(str));
+    return pattern.test(str);
+    //return !/\D/.test(str);
+  }
 
 function isANumber(str){
     const pattern = new RegExp('^-?\\d*(\\.\\d+)?$');
@@ -405,6 +533,13 @@ function isANumber(str){
 function parseInputsToP1P2Array(macroTxt){
     const lineArray = macroTxt.trim().split('\n');
     for(var i = 0; i < lineArray.length; i++){
+        var potentialLine = lineArray[i].trim();
+        if(matchesTimewarpRegex(potentialLine)){
+            var splitInfo = potentialLine.split(/\s*[Tt]\s*=\s*/);
+            //timewarpInfo.push([parseInt(splitInfo[0],10), parseFloat(splitInfo[1])]);
+            timewarpInfo.splice(findIndexToInsert(timewarpInfo, parseInt(splitInfo[0],10)), 0, [parseInt(splitInfo[0],10), parseFloat(splitInfo[1])]);
+            continue;
+        }
         var lineAsInts1 = lineArray[i].trim().split(/(\s+)/);
         var lineAsInts= lineAsInts1.filter(n => isANumber(n));
         if(i == 0){
@@ -418,24 +553,40 @@ function parseInputsToP1P2Array(macroTxt){
             p2InputArray.push(parseInt(lineAsInts[0],10));
         }
     }
+    //console.log(timewarpInfo);
 }
+
+function findIndexToInsert(array, element) {
+    for (let i = 0; i < array.length; i++) {
+      if (element <= array[i][0]) {
+        return i;
+      }
+    }
+    return array.length;
+  }
 
 function splitMacro(macroTxt){
     const lineArray = macroTxt.trim().split('\n');
     for(var i = 1; i < lineArray.length; i++){
-        var lineAsInts1 = lineArray[i].trim().split(/(\s+)/);
-        var lineAsInts= lineAsInts1.filter(n => isANumber(n));
-        if(parseInt(lineAsInts[1],10) == 1 && parseInt(lineAsInts[2]) == 0){ //P1 click
-            p1SeparatedMacro.push(parseInt(lineAsInts[0],10) + " c");
+        var potentialLine = lineArray[i].trim();
+        if(matchesTimewarpRegex(potentialLine)){
+            continue;
         }
-        else if(parseInt(lineAsInts[1],10) == 0 && parseInt(lineAsInts[2]) == 0){ //P1 release
-            p1SeparatedMacro.push(parseInt(lineAsInts[0],10) + " r");
-        }
-        else if(parseInt(lineAsInts[1],10) == 1 && parseInt(lineAsInts[2]) == 1){ //P2 click
-            p2SeparatedMacro.push(parseInt(lineAsInts[0],10) + " c");
-        }
-        else if(parseInt(lineAsInts[1],10) == 0 && parseInt(lineAsInts[2]) == 1){ //P2 release
-            p2SeparatedMacro.push(parseInt(lineAsInts[0],10) + " r");
+        else{
+            var lineAsInts1 = lineArray[i].trim().split(/(\s+)/);
+            var lineAsInts= lineAsInts1.filter(n => isANumber(n));
+            if(parseInt(lineAsInts[1],10) == 1 && parseInt(lineAsInts[2]) == 0){ //P1 click
+                p1SeparatedMacro.push(parseInt(lineAsInts[0],10) + " c");
+            }
+            else if(parseInt(lineAsInts[1],10) == 0 && parseInt(lineAsInts[2]) == 0){ //P1 release
+                p1SeparatedMacro.push(parseInt(lineAsInts[0],10) + " r");
+            }
+            else if(parseInt(lineAsInts[1],10) == 1 && parseInt(lineAsInts[2]) == 1){ //P2 click
+                p2SeparatedMacro.push(parseInt(lineAsInts[0],10) + " c");
+            }
+            else if(parseInt(lineAsInts[1],10) == 0 && parseInt(lineAsInts[2]) == 1){ //P2 release
+                p2SeparatedMacro.push(parseInt(lineAsInts[0],10) + " r");
+            }
         }
     }
 }
@@ -534,6 +685,14 @@ document.getElementById('help-area-3').addEventListener('click', async () =>{
 
 document.getElementById('close-button-3').addEventListener('click', async () =>{
     document.getElementById('help-box-3').style.display='none';
+});
+
+document.getElementById('help-area-4').addEventListener('click', async () =>{
+    document.getElementById('help-box-4').style.display='block';
+});
+
+document.getElementById('close-button-4').addEventListener('click', async () =>{
+    document.getElementById('help-box-4').style.display='none';
 });
 
 /*document.getElementById('culling').addEventListener('change', async () =>{
