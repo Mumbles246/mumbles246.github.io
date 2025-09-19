@@ -424,9 +424,9 @@ function derive(inputFrames, breakArray) {
 
             //var timeBetweenClicks = parseFloat(stintEnd - stintStart) / framerate;
             var cps = (noClicks-1) / runningTimeTotal; // Actual number of clicks instead of 5. Added minus 1
-
             if (cps > 48) {
-                breakArrayRule3.push('- ' + cps.toFixed(3) + " cps rate for the " + noClicks + " click stint from frames " + stintStart + " to " + stintEnd + " (" + runningTimeTotal.toFixed(3) + "s)\n");
+                var res = Number.isFinite(cps) ? cps.toFixed(3) : "\u221E";
+                breakArrayRule3.push('- ' + res + " cps rate for the " + noClicks + " click stint from frames " + stintStart + " to " + stintEnd + " (" + runningTimeTotal.toFixed(3) + "s)\n");
                 _3break = true;
                 max = true;
                 min = false;
