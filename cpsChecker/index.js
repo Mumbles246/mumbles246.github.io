@@ -307,6 +307,7 @@ function derive(inputFrames, breakArray) {
                 }
             }
         }
+        /* Old loop
         frameOneSecondLater = Math.floor(frameOneSecondLater);
         var numClicks = 0;
         var lastClickWithinTime = firstClickFrame;
@@ -319,6 +320,17 @@ function derive(inputFrames, breakArray) {
             } else if (inputFrames[i + j] == frameOneSecondLater) {
                 lastClickWithinTime = inputFrames[i + j];
                 numClicks++;
+                break; // Consider not breaking here
+            }
+        } */
+        frameOneSecondLater = Math.floor(frameOneSecondLater);
+        var numClicks = 0;
+        var lastClickWithinTime = firstClickFrame;
+        for (var j = 0; j < inputFrames.length; j++) {
+            if (inputFrames[i + j] <= frameOneSecondLater) {
+                lastClickWithinTime = inputFrames[i + j];
+                numClicks++;
+            } else{
                 break;
             }
         }
