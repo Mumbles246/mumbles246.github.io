@@ -90,11 +90,11 @@
         Adding timewarps
       </h3>
       <p1 class="p1">
-        You can add timewarps to a macro by specifying the frame it is activated, and the timewarp factor. Examples:
+        This tool supports timewarps. You can add timewarps to a macro by specifying the frame it is activated, and the timewarp factor. Examples:
         <br><br>240<br>100 T = 2<br>125 1 0<br>130 0 0<br>135 1 0<br>140 0 0<br>146 T = 1.5<br>150 1 0<br>155 0 0<br>. . .<br>
       </p1>
       <p2 class="p2">
-        <br>Note that this feature is experimental. Contact me if there are any issues.
+        <br>Contact EDSJustin if there are any issues.
       </p2>
       <p1 class="p1" id="secondExample">
         <br><br>240<br>100 T = 2<br>146 T = 1.5<br>125 1 0<br>130 0 0<br>135 1 0<br>140 0 0<br>150 1 0<br>155 0 0<br>. . .<br>
@@ -139,7 +139,7 @@
       </p1>
       <p2 class="p2">
         <br><br>This program checks if the above rules are satisfied for both players in a macro.
-        <br><br>If they're not, it will tell you what frames the violations occur at.
+        <br><br>If they're not, it will tell you what frames the violations occur at and suggest ways to fix the macro.
       </p2>
     </div>
     <div id="help-box-3" data-closeable>
@@ -175,24 +175,51 @@
        <h2>
         Results
       </h2>
+      <div id="player1Section">
       <textArea id="outbox1" class="outArea1" readonly>
       </textArea>
       <p class="p1results">
         Player 1 CPS violations:
       </p>
+      <div id = "checkboxP1">
+    <input type="checkbox" id="showP1FixBox" name="showP1FixBox" value=0>
+    <label for="showP1FixBox">Show suggested fixes</label><br>
+    </div>
+    <img class="checkmark" id="check1" src="./img/check.png" alt="check">
+      <img class="cross" id="cross1" src="./img/cross.png" alt="cross">
+    <textArea id="player1fixbox" class="player1FixArea" readonly>
+      </textArea>
+    </div>
+    <div id="player2Section">
       <textArea id="outbox2" class="outArea2" readonly>
       </textArea>
       <p class="p2results">
         Player 2 CPS violations:
       </p>
-      <div class="img2" id="refreshButton">
+      <img class="checkmark" id="check2" src="./img/check.png" alt="check2">
+      <img class="cross" id="cross2" src="./img/cross.png" alt="cross2">
+        <div id = "checkboxP2">
+    <input type="checkbox" id="showP2FixBox" name="showP2FixBox" value=0>
+    <label for="showP2FixBox">Show suggested fixes</label><br>
+    </div>
+     <textArea id="player2fixbox" class="player2FixArea" readonly>
+      </textArea>
+       <p class="retryText">
+      Check another macro
+    </p>
+     <div class="img2" id="refreshButton">
         <img class="arrow" src="./img/arrow2.png" alt="Arrow2">
         <img class="hoverArrow" src="./img/arrow2Hover.png" alt="Arrow2Hovered">
       </div>
+       <p class="downloadText">
+      Download results
+    </p>
       <div class="img3" id="downloadButton">
         <img class="arrow3" src="./img/arrow3.png" alt="Arrow3">
         <img class="hoverArrow3" src="./img/arrow3Hover.png" alt="Arrow3Hovered">
       </div>
+      </div>
+      <div id="swiftInfoArea">
       <div id = "checkboxes">
     <input type="checkbox" id="showSwiftsBox" name="showSwiftsBox" value=1 checked>
     <label for="showSwiftsBox">Show swift click info</label><br>
@@ -226,20 +253,7 @@
       <p id="totalswiftandinversetext">
         Total swift and inverse swift clicks:
       </p>
-    </div>
-    <p class="retryText">
-      Check another macro
-    </p>
-    <p class="downloadText">
-      Download results
-    </p>
-    <div>
-      <img class="checkmark" id="check1" src="./img/check.png" alt="check">
-      <img class="checkmark" id="check2" src="./img/check.png" alt="check2">
-    </div>
-    <div>
-      <img class="cross" id="cross1" src="./img/cross.png" alt="cross">
-      <img class="cross" id="cross2" src="./img/cross.png" alt="cross2">
+      </div>
     </div>
     <p id="invalid-text">
       An error occured while parsing the macro. Please make sure your macro follows the required format.

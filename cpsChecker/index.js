@@ -47,6 +47,10 @@ var currentTimewarp = 1;
 var framerate;
 var macroName = '<not provided>';
 
+// To hold objects with the same format
+const violationsP1 = [];
+const violationsP2 = [];
+
 document.getElementById('textbox').value = '';
 document.getElementById('outbox1').value = '';
 document.getElementById('outbox2').value = '';
@@ -92,6 +96,8 @@ document.getElementById('checkButton').addEventListener('click', async () =>{
     reportP2Results();
     reportP1SwiftInfo();
     reportP2SwiftInfo();
+    reportP1FixInfo();
+    reportP2FixInfo();
     document.getElementById('totalswifttext').textContent = 'Total swift clicks: ' + (p1SwiftClicks.length + p2SwiftClicks.length);
     document.getElementById('totalinverseswifttext').textContent = 'Total swift releases: ' + (p1InverseSwiftClicks.length + p2InverseSwiftClicks.length);
     document.getElementById('totalswiftandinversetext').textContent = 'Total swift clicks and releases: ' + (p1SwiftClicks.length + p2SwiftClicks.length + p1InverseSwiftClicks.length + p2InverseSwiftClicks.length);
@@ -125,6 +131,202 @@ document.getElementById('downloadButton').addEventListener('click', async () =>{
 document.getElementById('refreshButton').addEventListener('click', async () =>{
     location.reload();
 });
+
+function reportP1FixInfo(){
+    violationsP1.sort((a, b) => a.end - b.end);
+    console.log(violationsP1);
+    // Array to store point fixes: { frame: number, count: number }
+    const fixes = [];
+
+    // Process each violation
+    for (const v of violationsP1) {
+        // How much of this violation is already covered by existing fixes
+        let covered = 0;
+        for (const f of fixes) {
+            if (f.frame >= v.start && f.frame <= v.end) {
+            covered += f.count;
+            }
+        }
+
+        const needed = v.excess - covered;
+
+        // If some clicks are still needed, add a fix at the end of the violation
+        if (needed > 0) {
+            fixes.push({
+            frame: v.end,
+            count: needed
+            });
+        }
+    }
+    //console.log(fixes);
+
+    const remaining = violationsP1.map(v => ({
+        ...v,
+        remaining: v.excess
+    }));
+
+    const results = [];
+
+    for (const fix of fixes) {
+    // Find violations this fix can contribute to
+    const candidates = remaining.filter(v =>
+        v.remaining > 0 &&
+        fix.frame >= v.start &&
+        fix.frame <= v.end
+    );
+
+    if (candidates.length > 0) {
+        // Intersection of all candidates gives start and end of range
+        let start = candidates[0].start;
+        let end = candidates[0].end;
+
+        for (const v of candidates) {
+        start = Math.max(start, v.start);
+        end = Math.min(end, v.end);
+        }
+
+        results.push({
+        start,
+        end,
+        count: fix.count
+        });
+
+        // Reduce remaining coverage for these violations
+        let remainingToAssign = fix.count;
+        for (const v of candidates) {
+        if (remainingToAssign <= 0) break;
+
+        const used = Math.min(v.remaining, remainingToAssign);
+        v.remaining -= used;
+        remainingToAssign -= used;
+        }
+    }
+    }
+
+    const mergedResults = [];
+
+    for (const r of results) {
+    // Try to find an existing entry with same range
+    const existing = mergedResults.find(
+        m => m.start === r.start && m.end === r.end
+    );
+
+    if (existing) {
+        // Add counts together
+        existing.count += r.count;
+    } else {
+        // Create new entry
+        mergedResults.push({ ...r });
+    }
+    }
+    document.getElementById('player1fixbox').value = '';
+    for (var i = 0; i < mergedResults.length; i++) {
+        var clickString = mergedResults[i].count == 1 ? "click" : "clicks";
+        var betweenString = mergedResults[i].start == mergedResults[i].end ? `on frame ${mergedResults[i].start}` : `between frames ${mergedResults[i].start}-${mergedResults[i].end}`;
+        document.getElementById('player1fixbox').value = document.getElementById('player1fixbox').value + `- Remove ${mergedResults[i].count} ${clickString} ${betweenString}`;
+        if(i < mergedResults.length-1){
+            document.getElementById('player1fixbox').value = document.getElementById('player1fixbox').value + "\n";
+        }
+    }
+}
+
+function reportP2FixInfo(){
+    violationsP2.sort((a, b) => a.end - b.end);
+    //console.log(violationsP2);
+    // Array to store point fixes: { frame: number, count: number }
+    const fixes = [];
+
+    // Process each violation
+    for (const v of violationsP2) {
+        // How much of this violation is already covered by existing fixes
+        let covered = 0;
+        for (const f of fixes) {
+            if (f.frame >= v.start && f.frame <= v.end) {
+            covered += f.count;
+            }
+        }
+
+        const needed = v.excess - covered;
+
+        // If some clicks are still needed, add a fix at the end of the violation
+        if (needed > 0) {
+            fixes.push({
+            frame: v.end,
+            count: needed
+            });
+        }
+    }
+    //console.log(fixes);
+
+    const remaining = violationsP2.map(v => ({
+        ...v,
+        remaining: v.excess
+    }));
+
+    const results = [];
+
+    for (const fix of fixes) {
+    // Find violations this fix can contribute to
+    const candidates = remaining.filter(v =>
+        v.remaining > 0 &&
+        fix.frame >= v.start &&
+        fix.frame <= v.end
+    );
+
+    if (candidates.length > 0) {
+        // Intersection of all candidates gives start and end of range
+        let start = candidates[0].start;
+        let end = candidates[0].end;
+
+        for (const v of candidates) {
+        start = Math.max(start, v.start);
+        end = Math.min(end, v.end);
+        }
+
+        results.push({
+        start,
+        end,
+        count: fix.count
+        });
+
+        // Reduce remaining coverage for these violations
+        let remainingToAssign = fix.count;
+        for (const v of candidates) {
+        if (remainingToAssign <= 0) break;
+
+        const used = Math.min(v.remaining, remainingToAssign);
+        v.remaining -= used;
+        remainingToAssign -= used;
+        }
+    }
+    }
+
+    const mergedResults = [];
+
+    for (const r of results) {
+    // Try to find an existing entry with same range
+    const existing = mergedResults.find(
+        m => m.start === r.start && m.end === r.end
+    );
+
+    if (existing) {
+        // Add counts together
+        existing.count += r.count;
+    } else {
+        // Create new entry
+        mergedResults.push({ ...r });
+    }
+    }
+    document.getElementById('player2fixbox').value = '';
+    for (var i = 0; i < mergedResults.length; i++) {
+        var clickString = mergedResults[i].count == 1 ? "click" : "clicks";
+        var betweenString = mergedResults[i].start == mergedResults[i].end ? `on frame ${mergedResults[i].start}` : `between frames ${mergedResults[i].start}-${mergedResults[i].end}`;
+        document.getElementById('player2fixbox').value = document.getElementById('player2fixbox').value + `- Remove ${mergedResults[i].count} ${clickString} ${betweenString}`;
+        if(i < mergedResults.length-1){
+            document.getElementById('player2fixbox').value = document.getElementById('player2fixbox').value + "\n";
+        }
+    }
+}
 
 function reportP1SwiftInfo(){
     document.getElementById('p1st').textContent = 'Player 1 swift clicks: ' + p1SwiftClicks.length;
@@ -214,6 +416,7 @@ function reportP1Results(){
             }
         }
         document.getElementById('cross1').style.visibility = 'visible';
+        document.getElementById('checkboxP1').style.visibility = 'visible';
     }
 }
 
@@ -258,6 +461,7 @@ function reportP2Results(){
             document.getElementById('outbox2').value = document.getElementById('outbox2').value + "\n";
         }
         document.getElementById('cross2').style.visibility = 'visible';
+        document.getElementById('checkboxP2').style.visibility = 'visible';
     }
 }
 
@@ -268,18 +472,18 @@ function disable(){
 }
 
 function checkP1CpsBreaks(){
-    derive(p1InputArray, p1Rule1Breaks);
+    derive(p1InputArray, p1Rule1Breaks, violationsP1);
     Derive(p1InputArray, p1Rule2Breaks, p1Rule3Breaks, p1Rule2MaxCull, 
-        p1Rule3MaxCull, p1Rule2MinCull, p1Rule3MinCull);
+        p1Rule3MaxCull, p1Rule2MinCull, p1Rule3MinCull, violationsP1);
 }
 
 function checkP2CpsBreaks(){ 
-    derive(p2InputArray, p2Rule1Breaks);
+    derive(p2InputArray, p2Rule1Breaks, violationsP2);
     Derive(p2InputArray, p2Rule2Breaks, p2Rule3Breaks, p2Rule2MaxCull, 
-        p2Rule3MaxCull, p2Rule2MinCull, p2Rule3MinCull);
+        p2Rule3MaxCull, p2Rule2MinCull, p2Rule3MinCull, violationsP2);
 }
 
-function derive(inputFrames, breakArray) {
+function derive(inputFrames, breakArray, violations) {
     var hasTimeWarps = timewarpInfo.length > 0;
     for (var i = 0; i < inputFrames.length; i++) {
         var firstClickFrame = inputFrames[i];
@@ -339,11 +543,16 @@ function derive(inputFrames, breakArray) {
         if (numClicks > 16) { // Originally 15
             breakArray.push("- " + numClicks + " clicks in 1s: [frame " + firstClickFrame + " to " + frameOneSecondLater +
                 "]: (" + runningTimeTotal.toFixed(3) + "s between first and last)\n");
+            violations.push({
+                start: firstClickFrame,
+                end: lastClickWithinTime,
+                excess: numClicks - 16
+            });    
         }
     }
 }
 
- function Derive(inputFrames, breakArrayRule2, breakArrayRule3, rule2Max, rule3Max, rule2Min, rule3Min) {
+ function Derive(inputFrames, breakArrayRule2, breakArrayRule3, rule2Max, rule3Max, rule2Min, rule3Min, violations) {
     var framesThatBreakRule2 = [];
     var hasTimeWarps = timewarpInfo.length > 0;
     for (var i = 0; i < inputFrames.length; i++) {
@@ -427,6 +636,18 @@ function derive(inputFrames, breakArray) {
             if (cps > 48) {
                 var res = Number.isFinite(cps) ? cps.toFixed(3) : "\u221E";
                 breakArrayRule3.push('- ' + res + " cps rate for the " + noClicks + " click stint from frames " + stintStart + " to " + stintEnd + " (" + runningTimeTotal.toFixed(3) + "s)\n");
+                var s;
+                if(runningTimeTotal == 0){
+                    s = noClicks - 3; // 3 to fix rule 2 too, 4 just fixes rule 3 but they should get joined later. maybe not
+                }
+                else{
+                    s = Math.min(noClicks - Math.floor(48 * runningTimeTotal + 1), noClicks - 4);
+                }
+                violations.push({
+                    start: stintStart,
+                    end: stintEnd,
+                    excess: s
+                });   
                 _3break = true;
                 max = true;
                 min = false;
@@ -446,6 +667,11 @@ function derive(inputFrames, breakArray) {
         if (numberOfClicksOnSameFrame > 3 && !framesThatBreakRule2.includes(inputFrames[i])) {
             breakArrayRule2.push('- ' + numberOfClicksOnSameFrame + " clicks detected on frame " + inputFrames[i] + "\n");
             framesThatBreakRule2.push(inputFrames[i]);
+            violations.push({
+                start: inputFrames[i],
+                end: inputFrames[i],
+                excess: numberOfClicksOnSameFrame - 3
+            });   
             _2break = true;
             max = true;
             min = false;
@@ -672,6 +898,24 @@ document.getElementById('showSwiftsBox').addEventListener('change', async () =>{
         document.getElementById('totalswifttext').style.visibility='hidden';
         document.getElementById('totalinverseswifttext').style.visibility='hidden';
         document.getElementById('totalswiftandinversetext').style.visibility='hidden';
+    }
+});
+
+document.getElementById('showP1FixBox').addEventListener('change', async () =>{
+    if(document.getElementById('showP1FixBox').checked == true){
+        document.getElementById('player1fixbox').style.display='block';
+    }   
+    else{
+        document.getElementById('player1fixbox').style.display='none';
+    }
+});
+
+document.getElementById('showP2FixBox').addEventListener('change', async () =>{
+    if(document.getElementById('showP2FixBox').checked == true){
+        document.getElementById('player2fixbox').style.display='block';
+    }   
+    else{
+        document.getElementById('player2fixbox').style.display='none';
     }
 });
 

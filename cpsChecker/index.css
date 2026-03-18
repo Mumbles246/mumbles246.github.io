@@ -125,11 +125,11 @@ button:hover{
 
 .outputBox{
   position:relative;
-  bottom:350px;
+  bottom:410px;
   left: 730px;
   background: var(--bg-secondary);
   width:620px;
-  height:1150px;
+  height:1230px;
   display:block;
   border: 1px solid var(--border-color);
 }
@@ -139,6 +139,7 @@ button:hover{
   left:450;
   bottom:85;
   pointer-events:fill;
+  width:10px;
 }
 
 .arrow{
@@ -172,7 +173,7 @@ h2{
   position:relative;
   background: var(--bg-secondary);
   width:110px;
-  bottom: 90px;
+  bottom: 70px;
   padding:5px;
   font-size: 30px;
   color: var(--text-primary);
@@ -189,6 +190,55 @@ h2{
   background-color: var(--bg-primary);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
+}
+
+.player1FixArea{
+  z-index: 1000;
+  position:relative;
+  top:-90px;
+  left:30px;
+  width:560px;
+  height:70px;
+  resize:none;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  display:none;
+}
+
+.player2FixArea{
+  z-index: 1000;
+  position:relative;
+  top:-90px;
+  left:30px;
+  width:560px;
+  height:70px;
+  resize:none;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  display:none;
+}
+
+#player2Section{
+  position:relative;
+  top:-50px;
+}
+
+#checkboxP1{
+  position:relative;
+  bottom:75px;
+  left:25px;
+  top:-65px;
+  visibility:hidden;
+}
+
+#checkboxP2{
+  position:relative;
+  bottom:75px;
+  left:25px;
+  top:-95px;
+  visibility:hidden;
 }
 
 .p1results{
@@ -223,8 +273,9 @@ h2{
 .img2{
   position:relative;
   left:120;
-  bottom:50;
+  bottom:90;
   pointer-events:fill;
+  width:10px;
 }
 
 .img2:hover .hoverArrow{
@@ -233,15 +284,20 @@ h2{
 
 .retryText{
   position:relative;
-  left:830px;
-  bottom:994.5px;
+  left:98px;
+  bottom:-30px;
+}
+
+#swiftInfoArea{
+  position:relative;
+  bottom:100px;
 }
 
 .img3{
   position:relative;
   left:410;
-  bottom:145;
-  width:70;
+  bottom:205;
+  width:10px;
   pointer-events:none;
 }
 
@@ -265,8 +321,9 @@ h2{
 
 .downloadText{
   position:relative;
-  left:1130px;
-  bottom:1010px;
+  left:400px;
+  bottom:86px;
+  width:200px;
 }
 
 .checkmark{
@@ -276,15 +333,15 @@ h2{
 
 #check1{
   position:relative;
-  left:930px;
-  bottom:1512px;
+  left:200px;
+  bottom:240px;
   visibility: hidden;
 }
 
 #check2{
   position:relative;
-  left:903px;
-  bottom:1312px;
+  left:200px;
+  bottom:220px;
   visibility: hidden;
 }
 
@@ -295,15 +352,15 @@ h2{
 
 #cross1{
   position:relative;
-  left:930px;
-  bottom:1542px;
+  left:170px;
+  bottom:240px;
   visibility:hidden;
 }
 
 #cross2{
   position:relative;
-  left:902px;
-  bottom:1342px;
+  left:165px;
+  bottom:220px;
   visibility: hidden;
 }
 
@@ -512,7 +569,7 @@ h3{
 
 #invalid-text{
   position:relative;
-  bottom:1145px;
+  bottom:1112px;
   width:485px;
   font-size: 17px;
   font-weight:600;
@@ -528,7 +585,7 @@ h3{
 
 #fps-text{
   position:relative;
-  bottom:1590px;
+  bottom:1463px;
   left:590px;
   width:100px;
   word-break: break-all;
