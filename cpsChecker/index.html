@@ -270,7 +270,270 @@
      <p class="dark">
     Dark mode by argx
   </p>
+  <div id="everything-graph-related">
+  <div class="chart-wrapper">
+    <canvas id="cpsChart"></canvas>
+  </div>
+  <div id="graph1Settings">
+  <div id="graph-toggles">
+    <label class="switch">
+      <input type="checkbox" id="toggleP1" checked>
+      <span class="slider" data-color="blue"></span>
+      <span class="label-text">Player 1</span>
+    </label>
+
+    <label class="switch">
+      <input type="checkbox" id="toggleP2" checked>
+      <span class="slider" data-color="green"></span>
+      <span class="label-text">Player 2</span>
+    </label>
+
+    <label class="switch">
+      <input type="checkbox" id="toggleCombined">
+      <span class="slider" data-color="pink"></span>
+      <span class="label-text">Combined</span>
+    </label>
+
+    <div class="toggle16Switch">
+      <label class="switch">
+        <input type="checkbox" id="toggleLimit" checked>
+        <span class="slider" data-color="red"></span>
+        <span class="label-text">16 CPS</span>
+      </label>
+    </div>
+    <div class="twSwitch">
+    <label class="switch">
+      <input type="checkbox" id="toggleTimewarps" checked>
+      <span class="slider" data-color="yellow"></span>
+      <span class="label-text">Timewarps</span>
+  </label>
+  </div>
+</div>
+<div class="graph-controls-info">
+  <div>Scroll: Zoom X</div>
+  <div>Scroll + Shift: Zoom Y</div>
+  <div>Drag: Pan</div>
+</div>
+<button id="resetZoomBtn" class="reset-zoom-btn">
+  Reset Zoom
+</button>
+<div class="graph-info-container">
+  <div class="info-button" onmouseenter="showInfo('graph1')" onmouseleave="hideInfo('graph1')">
+    ⓘ
+  </div>
+
+  <div class="info-tooltip" id="graph1-info">
+    This graph visualizes Rule 1.<br><br>It shows clicks per second (CPS) at each click frame, calculated using a sliding 1-second window.
+
+    <br><br>Each point represents how many clicks occurred in the past second at that moment in time.
+
+    <br><br>'Combined' treats both players' inputs as a single stream.
+    <br><br> Hold Ctrl for Draw Mode, and Alt for Erase mode.
+  </div>
+</div>
+</div>
+<div id="graph2AndFriends">
+<div class="chart-wrapper2">
+    <canvas id="cpsChart2"></canvas>
+  </div>
+
+  <div id="graph2Settings">
+<div id="graph-toggles-2">
+    <label class="switch">
+      <input type="checkbox" id="toggleP1-2" checked>
+      <span class="slider" data-color="blue"></span>
+      <span class="label-text">Player 1</span>
+    </label>
+
+    <label class="switch">
+      <input type="checkbox" id="toggleP2-2" checked>
+      <span class="slider" data-color="green"></span>
+      <span class="label-text">Player 2</span>
+    </label>
+
+    <label class="switch">
+      <input type="checkbox" id="toggleCombined-2">
+      <span class="slider" data-color="pink"></span>
+      <span class="label-text">Combined</span>
+    </label>
+
+    <div class="toggle16Switch">
+      <label class="switch">
+        <input type="checkbox" id="toggleLimit-2" checked>
+        <span class="slider" data-color="red"></span>
+        <span class="label-text">48 CPS</span>
+      </label>
+    </div>
+    <div class="twSwitch">
+    <label class="switch">
+      <input type="checkbox" id="toggleTimewarps-2" checked>
+      <span class="slider" data-color="yellow"></span>
+      <span class="label-text">Timewarps</span>
+  </label>
+  </div>
+</div>
+<div class="graph-controls-info-2">
+  <div>Scroll: Zoom X</div>
+  <div>Scroll + Shift: Zoom Y</div>
+  <div>Drag: Pan</div>
+</div>
+<button id="resetZoomBtn-2" class="reset-zoom-btn">
+  Reset Zoom
+</button>
+<div class="graph-info-container-2">
+  <div class="info-button" onmouseenter="showInfo('graph2')" onmouseleave="hideInfo('graph2')">
+    ⓘ
+  </div>
+
+  <div class="info-tooltip" id="graph2-info">
+This graph visualizes Rule 3. <br><br>It shows the maximum CPS among all stints of length ≥ 5 that end at each click frame.
+<br><br>
+Each point represents the stint with the highest CPS ending at that frame, based on its number of clicks and duration.
+<br><br>
+'Combined' treats both players' inputs as a single stream.
+<br><br>
+Only stints that occur within 1 second are considered.
+  </div>
+</div>
+</div>
+</div>
+
+<div id="sandbox-container">
+
+  <h2>Edit Macro<span id="smallText" style="font-size: 0.7em; font-weight: normal">(Affects both graphs)</span></h2>
+
+  <div class="sandbox-grid">
+
+    <!-- LEFT SIDE: SIMPLE CONTROLS -->
+    <div class="sandbox-left">
+
+      <!-- CLICK CONTROLS -->
+      <div class="sandbox-section">
+        <h3>Clicks</h3>
+
+        <label>Player:</label>
+        <select id="click-player">
+          <option value="p1">Player 1</option>
+          <option value="p2">Player 2</option>
+        </select>
+
+        <label>Frame:</label>
+        <input type="number" id="click-frame" placeholder="e.g. 240">
+
+        <div class="button-row">
+          <button id="add-click">Add Click</button>
+          <button id="remove-click">Remove Click</button>
+        </div>
+      </div>
+
+      <!-- TIMEWARP CONTROLS -->
+      <div class="sandbox-section">
+        <h3>Timewarps</h3>
+
+        <label>Frame:</label>
+        <input type="number" id="tw-frame" placeholder="e.g. 100">
+
+        <label>Factor:</label>
+        <input type="number" step="0.1" id="tw-factor" placeholder="e.g. 2 (not needed for removals)">
+
+        <div class="button-row">
+          <button id="add-tw">Add Timewarp</button>
+          <button id="remove-tw">Remove Timewarp</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDE: BATCH EDIT (RESERVED) -->
+    <div class="sandbox-right">
+
+      <div class="sandbox-section">
+        <h3>Batch Edit (Advanced)</h3>
+
+      <div class="editor-container">
+        <!-- <div id="highlight-layer"></div> -->
+        <div id="batch-input" contenteditable="true" spellcheck="false" placeholder="Enter commands here..."></div>
+      </div>
+
+        <button id="apply-batch">Apply</button>
+        <button id="undo-btn">Undo</button>
+
+        <div id="draw-target-container">
+        <span class="draw-label">Draw/Erase for:</span>
+
+        <label class="radio-inline">
+          P1 <input type="radio" name="draw-target" value="p1" checked>
+        </label>
+
+        <label class="radio-inline">
+          P2 <input type="radio" name="draw-target" value="p2">
+        </label>
+      </div>
+        <div id="log-section">
+        <div id="log-header">
+          <span>Action Log</span>
+        </div>
+
+        <textarea id="log-output" readonly placeholder="Your actions will appear here..."></textarea>
+      </div>
+        <div id="drag-handle"></div>
+
+      </div>
+
+    </div>
+
+  </div>
+  <div id="batch-help-container">
+  <span id="batch-help-button">?</span>
+  <div id="batch-tooltip">
+    <pre>
+Batch Commands
+
+Format:
+[action] [target] [frames...]
+
+Actions:
+add, remove
+
+Targets:
+p1, p2 (clicks), tw (timewarps)
+
+Frames:
+Numbers like 240, 300, etc.
+Use "all" to remove everything from a target.
+
+Modifiers:
+frame:count → add/remove multiple clicks  
+frame:all → remove all clicks at that frame  
+frame:factor → required for timewarps (e.g. 240:1.5)
+
+Notes:
+• action persists until changed  
+• target persists until changed or action changes  
+
+Examples:
+add p1 240 300 400:2 p2 200:3 tw 100:2
+remove p1 240:all  
+add tw 240:1.5  
+remove tw all
+    </pre>
+  </div>
+</div>
+</div>
+
+</div>
+
+<div id="generateButtonContainer">
+    <img id="generateButton" src="./img/graphs.png" alt="Generate">
+  <p id="generateText">
+    Generate graphs
+  </p>
+</div>
+
   </main>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
   <script
     src="./index.js"></script>
 
