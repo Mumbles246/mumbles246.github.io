@@ -60,6 +60,9 @@ const MAX_HISTORY = 100; // prevent memory issues
 let activePlayer = "p1";
 let actionLog = [];
 
+let p1FixesComputed = false;
+let p2FixesComputed = false;
+
 document.getElementById('textbox').value = '';
 document.getElementById('outbox1').value = '';
 document.getElementById('outbox2').value = '';
@@ -76,10 +79,15 @@ document.getElementById('checkButton').addEventListener('click', async () =>{
     }
     document.getElementById('invalid-text').style.display = 'none';
 
+    //console.log("Start");
+    //console.time("parse");
     parseInputsToP1P2Array(macroTxt);
+    //console.timeEnd("parse");
+    //console.time("split and extract swifts");
     splitMacro(macroTxt);
     extractSwiftsFromP1Macro();
     extractSwiftsFromP2Macro();
+    //console.timeEnd("split and extract swifts");
 
     document.getElementById('fps-text').textContent = 'FPS: ' + framerate;
     document.getElementById('fps-text').style.display = 'block';
@@ -98,18 +106,27 @@ document.getElementById('checkButton').addEventListener('click', async () =>{
         document.getElementById('totalinverseswifttext').style.visibility='visible';
         document.getElementById('totalswiftandinversetext').style.visibility='visible';
     // Added sort here because people would upload UNSORTED MACROS
+    //console.time("sort");
     p1InputArray.sort((a, b) => a-b);
     p2InputArray.sort((a, b) => a-b);
+    //console.timeEnd("sort");
     
+    //console.time("p1 cps");
     checkP1CpsBreaks();
+    //console.timeEnd("p1 cps");
+    //console.time("p2 cps");
     checkP2CpsBreaks();
+    //console.timeEnd("p2 cps");
 
+    //console.time("report cps results");
     reportP1Results();
     reportP2Results();
+    //console.timeEnd("report cps results");
+    //console.time("report swift info");
     reportP1SwiftInfo();
     reportP2SwiftInfo();
-    reportP1FixInfo();
-    reportP2FixInfo();
+    //console.timeEnd("report swift info");
+    //console.log('Finished');
 
     document.getElementById('totalswifttext').textContent = 'Total swift clicks: ' + (p1SwiftClicks.length + p2SwiftClicks.length);
     document.getElementById('totalinverseswifttext').textContent = 'Total swift releases: ' + (p1InverseSwiftClicks.length + p2InverseSwiftClicks.length);
@@ -2660,9 +2677,9 @@ document.getElementById('refreshButton').addEventListener('click', async () =>{
     location.reload();
 });
 
-function reportP1FixInfo(){
+// Old again
+/*function reportP1FixInfo(){
     violationsP1.sort((a, b) => a.end - b.end);
-    //console.log(violationsP1);
     // Array to store point fixes: { frame: number, count: number }
     const fixes = [];
 
@@ -2747,20 +2764,350 @@ function reportP1FixInfo(){
         mergedResults.push({ ...r });
     }
     }
-    document.getElementById('player1fixbox').value = '';
-    for (var i = 0; i < mergedResults.length; i++) {
-        var clickString = mergedResults[i].count == 1 ? "click" : "clicks";
-        var betweenString = mergedResults[i].start == mergedResults[i].end ? `on frame ${mergedResults[i].start}` : `between frames ${mergedResults[i].start}-${mergedResults[i].end}`;
-        document.getElementById('player1fixbox').value = document.getElementById('player1fixbox').value + `- Remove ${mergedResults[i].count} ${clickString} ${betweenString}`;
-        if(i < mergedResults.length-1){
-            document.getElementById('player1fixbox').value = document.getElementById('player1fixbox').value + "\n";
+    
+    const fixBox = document.getElementById('player1fixbox');
+    const lines = [];
+    for (let i = 0; i < mergedResults.length; i++) {
+        const r = mergedResults[i];
+
+        const clickString = r.count === 1 ? "click" : "clicks";
+        const betweenString =
+            r.start === r.end
+                ? `on frame ${r.start}`
+                : `between frames ${r.start}-${r.end}`;
+
+        lines.push(`- Remove ${r.count} ${clickString} ${betweenString}`);
+
+        if (i < mergedResults.length - 1) {
+            lines.push("\n");
         }
     }
+    renderTextChunked(lines, fixBox);
+} */
+
+function reportP1FixInfo() {
+    const input = p1InputArray;
+    input.sort((a, b) => a - b);
+
+    // --- Build frameCounts ---
+    const frameCounts = new Map();
+    for (const f of input) {
+        frameCounts.set(f, (frameCounts.get(f) || 0) + 1);
+    }
+
+    // =====================================================
+    // STEP 1: ORIGINAL LOGIC (minimal fixes, unchanged)
+    // =====================================================
+    violationsP1.sort((a, b) => a.end - b.end);
+
+    const fixes = [];
+
+    for (const v of violationsP1) {
+        let covered = 0;
+
+        for (const f of fixes) {
+            if (f.frame >= v.start && f.frame <= v.end) {
+                covered += f.count;
+            }
+        }
+
+        const needed = v.excess - covered;
+
+        if (needed > 0) {
+            fixes.push({
+                frame: v.end,
+                count: needed
+            });
+        }
+    }
+
+    // =====================================================
+    // STEP 2: DISTRIBUTE FIXES ON REAL CLICKS
+    // =====================================================
+    const usedRemovals = new Map(); // frame → used count
+    const distributedFixes = [];
+
+    for (const fix of fixes) {
+        let needed = fix.count;
+
+        // walk backwards through real clicks
+        for (let i = input.length - 1; i >= 0 && needed > 0; i--) {
+            const frame = input[i];
+
+            if (frame < fix.frame - 1000000) break; // safety (never hit)
+            if (frame > fix.frame) continue;
+
+            const available = frameCounts.get(frame) || 0;
+            const used = usedRemovals.get(frame) || 0;
+
+            if (used < available) {
+                usedRemovals.set(frame, used + 1);
+
+                distributedFixes.push({
+                    frame: frame,
+                    count: 1
+                });
+
+                needed--;
+            }
+        }
+    }
+
+    // =====================================================
+    // STEP 3: SAME RANGE MERGING LOGIC (UNCHANGED)
+    // =====================================================
+    const remaining = violationsP1.map(v => ({
+        ...v,
+        remaining: v.excess
+    }));
+
+    const results = [];
+
+    for (const fix of distributedFixes) {
+        const candidates = [];
+
+        for (let i = 0; i < remaining.length; i++) {
+            const v = remaining[i];
+            if (
+                v.remaining > 0 &&
+                fix.frame >= v.start &&
+                fix.frame <= v.end
+            ) {
+                candidates.push(v);
+            }
+        }
+
+        if (candidates.length > 0) {
+            let start = candidates[0].start;
+            let end = candidates[0].end;
+
+            for (let i = 1; i < candidates.length; i++) {
+                const v = candidates[i];
+                if (v.start > start) start = v.start;
+                if (v.end < end) end = v.end;
+            }
+
+            results.push({
+                start,
+                end,
+                count: 1
+            });
+
+            let remainingToAssign = 1;
+
+            for (let i = 0; i < candidates.length && remainingToAssign > 0; i++) {
+                const v = candidates[i];
+                const used = Math.min(v.remaining, remainingToAssign);
+                v.remaining -= used;
+                remainingToAssign -= used;
+            }
+        }
+    }
+
+    // =====================================================
+    // MERGE IDENTICAL RANGES
+    // =====================================================
+    const mergedMap = new Map();
+
+    for (const r of results) {
+        const key = `${r.start}-${r.end}`;
+        if (mergedMap.has(key)) {
+            mergedMap.get(key).count += r.count;
+        } else {
+            mergedMap.set(key, { ...r });
+        }
+    }
+
+    const mergedResults = Array.from(mergedMap.values());
+
+    // =====================================================
+    // OUTPUT (UNCHANGED)
+    // =====================================================
+    const fixBox = document.getElementById('player1fixbox');
+    const lines = [];
+
+    for (let i = 0; i < mergedResults.length; i++) {
+        const r = mergedResults[i];
+
+        const clickString = r.count === 1 ? "click" : "clicks";
+        const betweenString =
+            r.start === r.end
+                ? `on frame ${r.start}`
+                : `between frames ${r.start}-${r.end}`;
+
+        lines.push(`- Remove ${r.count} ${clickString} ${betweenString}`);
+
+        if (i < mergedResults.length - 1) {
+            lines.push("\n");
+        }
+    }
+
+    renderTextChunked(lines, fixBox);
 }
 
-function reportP2FixInfo(){
+function reportP2FixInfo() {
+    const input = p2InputArray;
+    input.sort((a, b) => a - b);
+
+    // --- Build frameCounts ---
+    const frameCounts = new Map();
+    for (const f of input) {
+        frameCounts.set(f, (frameCounts.get(f) || 0) + 1);
+    }
+
+    // =====================================================
+    // STEP 1: ORIGINAL LOGIC (minimal fixes, unchanged)
+    // =====================================================
     violationsP2.sort((a, b) => a.end - b.end);
-    //console.log(violationsP2);
+
+    const fixes = [];
+
+    for (const v of violationsP2) {
+        let covered = 0;
+
+        for (const f of fixes) {
+            if (f.frame >= v.start && f.frame <= v.end) {
+                covered += f.count;
+            }
+        }
+
+        const needed = v.excess - covered;
+
+        if (needed > 0) {
+            fixes.push({
+                frame: v.end,
+                count: needed
+            });
+        }
+    }
+
+    // =====================================================
+    // STEP 2: DISTRIBUTE FIXES ON REAL CLICKS
+    // =====================================================
+    const usedRemovals = new Map(); // frame → used count
+    const distributedFixes = [];
+
+    for (const fix of fixes) {
+        let needed = fix.count;
+
+        // walk backwards through real clicks
+        for (let i = input.length - 1; i >= 0 && needed > 0; i--) {
+            const frame = input[i];
+
+            if (frame < fix.frame - 1000000) break; // safety (never hit)
+            if (frame > fix.frame) continue;
+
+            const available = frameCounts.get(frame) || 0;
+            const used = usedRemovals.get(frame) || 0;
+
+            if (used < available) {
+                usedRemovals.set(frame, used + 1);
+
+                distributedFixes.push({
+                    frame: frame,
+                    count: 1
+                });
+
+                needed--;
+            }
+        }
+    }
+
+    // =====================================================
+    // STEP 3: SAME RANGE MERGING LOGIC (UNCHANGED)
+    // =====================================================
+    const remaining = violationsP2.map(v => ({
+        ...v,
+        remaining: v.excess
+    }));
+
+    const results = [];
+
+    for (const fix of distributedFixes) {
+        const candidates = [];
+
+        for (let i = 0; i < remaining.length; i++) {
+            const v = remaining[i];
+            if (
+                v.remaining > 0 &&
+                fix.frame >= v.start &&
+                fix.frame <= v.end
+            ) {
+                candidates.push(v);
+            }
+        }
+
+        if (candidates.length > 0) {
+            let start = candidates[0].start;
+            let end = candidates[0].end;
+
+            for (let i = 1; i < candidates.length; i++) {
+                const v = candidates[i];
+                if (v.start > start) start = v.start;
+                if (v.end < end) end = v.end;
+            }
+
+            results.push({
+                start,
+                end,
+                count: 1
+            });
+
+            let remainingToAssign = 1;
+
+            for (let i = 0; i < candidates.length && remainingToAssign > 0; i++) {
+                const v = candidates[i];
+                const used = Math.min(v.remaining, remainingToAssign);
+                v.remaining -= used;
+                remainingToAssign -= used;
+            }
+        }
+    }
+
+    // =====================================================
+    // MERGE IDENTICAL RANGES
+    // =====================================================
+    const mergedMap = new Map();
+
+    for (const r of results) {
+        const key = `${r.start}-${r.end}`;
+        if (mergedMap.has(key)) {
+            mergedMap.get(key).count += r.count;
+        } else {
+            mergedMap.set(key, { ...r });
+        }
+    }
+
+    const mergedResults = Array.from(mergedMap.values());
+
+    // =====================================================
+    // OUTPUT (UNCHANGED)
+    // =====================================================
+    const fixBox = document.getElementById('player2fixbox');
+    const lines = [];
+
+    for (let i = 0; i < mergedResults.length; i++) {
+        const r = mergedResults[i];
+
+        const clickString = r.count === 1 ? "click" : "clicks";
+        const betweenString =
+            r.start === r.end
+                ? `on frame ${r.start}`
+                : `between frames ${r.start}-${r.end}`;
+
+        lines.push(`- Remove ${r.count} ${clickString} ${betweenString}`);
+
+        if (i < mergedResults.length - 1) {
+            lines.push("\n");
+        }
+    }
+
+    renderTextChunked(lines, fixBox);
+}
+
+// Old again
+/*function reportP2FixInfo(){
+    violationsP2.sort((a, b) => a.end - b.end);
     // Array to store point fixes: { frame: number, count: number }
     const fixes = [];
 
@@ -2845,18 +3192,29 @@ function reportP2FixInfo(){
         mergedResults.push({ ...r });
     }
     }
-    document.getElementById('player2fixbox').value = '';
-    for (var i = 0; i < mergedResults.length; i++) {
-        var clickString = mergedResults[i].count == 1 ? "click" : "clicks";
-        var betweenString = mergedResults[i].start == mergedResults[i].end ? `on frame ${mergedResults[i].start}` : `between frames ${mergedResults[i].start}-${mergedResults[i].end}`;
-        document.getElementById('player2fixbox').value = document.getElementById('player2fixbox').value + `- Remove ${mergedResults[i].count} ${clickString} ${betweenString}`;
-        if(i < mergedResults.length-1){
-            document.getElementById('player2fixbox').value = document.getElementById('player2fixbox').value + "\n";
+
+    const fixBox = document.getElementById('player2fixbox');
+    const lines = [];
+    for (let i = 0; i < mergedResults.length; i++) {
+        const r = mergedResults[i];
+
+        const clickString = r.count === 1 ? "click" : "clicks";
+        const betweenString =
+            r.start === r.end
+                ? `on frame ${r.start}`
+                : `between frames ${r.start}-${r.end}`;
+
+        lines.push(`- Remove ${r.count} ${clickString} ${betweenString}`);
+
+        if (i < mergedResults.length - 1) {
+            lines.push("\n");
         }
     }
-}
+    renderTextChunked(lines, fixBox);
+}*/
 
-function reportP1SwiftInfo(){
+// Old
+/*function reportP1SwiftInfo(){
     document.getElementById('p1st').textContent = 'Player 1 swift clicks: ' + p1SwiftClicks.length;
     document.getElementById('p1swiftsbox').value = '';
     document.getElementById('p1swiftsbox').value = document.getElementById('p1swiftsbox').value + "[";
@@ -2878,9 +3236,88 @@ function reportP1SwiftInfo(){
         }
     }
     document.getElementById('p1inverseswiftsbox').value = document.getElementById('p1inverseswiftsbox').value + "]";
+} */
+
+function reportP1SwiftInfo() {
+    const swiftsBox = document.getElementById('p1swiftsbox');
+    const inverseBox = document.getElementById('p1inverseswiftsbox');
+
+    document.getElementById('p1st').textContent =
+        'Player 1 swift clicks: ' + p1SwiftClicks.length;
+
+    document.getElementById('p1ist').textContent =
+        'Player 1 swift releases: ' + p1InverseSwiftClicks.length;
+
+    // --- Build swift clicks text ---
+    const swiftLines = ["["];
+
+    for (let i = 0; i < p1SwiftClicks.length; i++) {
+        swiftLines.push(String(p1SwiftClicks[i]));
+        if (i < p1SwiftClicks.length - 1) {
+            swiftLines.push(", ");
+        }
+    }
+
+    swiftLines.push("]");
+
+    // --- Build inverse swift clicks text ---
+    const inverseLines = ["["];
+
+    for (let i = 0; i < p1InverseSwiftClicks.length; i++) {
+        inverseLines.push(String(p1InverseSwiftClicks[i]));
+        if (i < p1InverseSwiftClicks.length - 1) {
+            inverseLines.push(", ");
+        }
+    }
+
+    inverseLines.push("]");
+
+    // --- Chunked render ---
+    renderTextChunked(swiftLines, swiftsBox);
+    renderTextChunked(inverseLines, inverseBox);
+}    
+
+function reportP2SwiftInfo() {
+    const swiftsBox = document.getElementById('p2swiftsbox');
+    const inverseBox = document.getElementById('p2inverseswiftsbox');
+
+    document.getElementById('p2st').textContent =
+        'Player 2 swift clicks: ' + p1SwiftClicks.length;
+
+    document.getElementById('p1ist').textContent =
+        'Player 2 swift releases: ' + p1InverseSwiftClicks.length;
+
+    // --- Build swift clicks text ---
+    const swiftLines = ["["];
+
+    for (let i = 0; i < p2SwiftClicks.length; i++) {
+        swiftLines.push(String(p2SwiftClicks[i]));
+        if (i < p2SwiftClicks.length - 1) {
+            swiftLines.push(", ");
+        }
+    }
+
+    swiftLines.push("]");
+
+    // --- Build inverse swift clicks text ---
+    const inverseLines = ["["];
+
+    for (let i = 0; i < p2InverseSwiftClicks.length; i++) {
+        inverseLines.push(String(p2InverseSwiftClicks[i]));
+        if (i < p2InverseSwiftClicks.length - 1) {
+            inverseLines.push(", ");
+        }
+    }
+
+    inverseLines.push("]");
+
+    // --- Chunked render ---
+    renderTextChunked(swiftLines, swiftsBox);
+    renderTextChunked(inverseLines, inverseBox);
 }
 
-function reportP2SwiftInfo(){
+// Old
+/*function reportP2SwiftInfo(){
     document.getElementById('p2st').textContent = 'Player 2 swift clicks: ' + p2SwiftClicks.length;
     document.getElementById('p2swiftsbox').value = '';
     document.getElementById('p2swiftsbox').value = document.getElementById('p2swiftsbox').value + "[";
@@ -2902,9 +3339,10 @@ function reportP2SwiftInfo(){
         }
     }
     document.getElementById('p2inverseswiftsbox').value = document.getElementById('p2inverseswiftsbox').value + "]";
-}
+} */
 
-function reportP1Results(){
+// Old
+/*function reportP1Results(){
     document.getElementById('outbox1').value = '';
     if(p1Rule1Breaks.length == 0 && p1Rule2Breaks.length == 0
         && p1Rule3Breaks.length == 0){
@@ -2946,8 +3384,138 @@ function reportP1Results(){
         document.getElementById('cross1').style.visibility = 'visible';
         document.getElementById('checkboxP1').style.visibility = 'visible';
     }
+} */
+
+function renderTextChunked(lines, element, chunkSize = 500) {
+    let index = 0;
+    element.value = "";
+
+    function renderChunk() {
+        const chunk = lines.slice(index, index + chunkSize).join("");
+        element.value += chunk;
+
+        index += chunkSize;
+
+        if (index < lines.length) {
+            requestAnimationFrame(renderChunk);
+        }
+    }
+
+    renderChunk();
 }
 
+function pushAll(target, source) {
+    for (let i = 0; i < source.length; i++) {
+        target.push(source[i]);
+    }
+}
+
+function reportP1Results() {
+    const outbox = document.getElementById('outbox1');
+    outbox.value = '';
+
+    const lines = [];
+
+    const noViolations =
+        p1Rule1Breaks.length === 0 &&
+        p1Rule2Breaks.length === 0 &&
+        p1Rule3Breaks.length === 0;
+
+    if (noViolations) {
+        document.getElementById('check1').style.visibility = 'visible';
+
+        lines.push("Rule 1 violations:\n[none]\n\n");
+        lines.push("Rule 2 violations:\n[none]\n\n");
+        lines.push("Rule 3 violations:\n[none]");
+    } else {
+        // --- Rule 1 ---
+        if (p1Rule1Breaks.length === 0) {
+            lines.push("Rule 1 violations:\n[none]\n\n");
+        } else {
+            lines.push("Rule 1 violations:\n");
+            pushAll(lines, p1Rule1Breaks);
+            lines.push("\n");
+        }
+
+        // --- Rule 2 ---
+        if (p1Rule2Breaks.length === 0) {
+            lines.push("Rule 2 violations:\n[none]\n\n");
+        } else {
+            lines.push("Rule 2 violations:\n");
+            pushAll(lines, p1Rule2Breaks);
+            lines.push("\n");
+        }
+
+        // --- Rule 3 ---
+        if (p1Rule3Breaks.length === 0) {
+            lines.push("Rule 3 violations:\n[none]");
+        } else {
+            lines.push("Rule 3 violations:\n");
+            pushAll(lines, p1Rule3Breaks);
+        }
+
+        document.getElementById('cross1').style.visibility = 'visible';
+        document.getElementById('checkboxP1').style.visibility = 'visible';
+    }
+
+    // 🚀 CHUNKED RENDERING
+    renderTextChunked(lines, outbox);
+}
+
+function reportP2Results() {
+    const outbox = document.getElementById('outbox2');
+    outbox.value = '';
+
+    const lines = [];
+
+    const noViolations =
+        p2Rule1Breaks.length === 0 &&
+        p2Rule2Breaks.length === 0 &&
+        p2Rule3Breaks.length === 0;
+
+    if (noViolations) {
+        document.getElementById('check2').style.visibility = 'visible';
+
+        lines.push("Rule 1 violations:\n[none]\n\n");
+        lines.push("Rule 2 violations:\n[none]\n\n");
+        lines.push("Rule 3 violations:\n[none]");
+    } else {
+        // --- Rule 1 ---
+        if (p2Rule1Breaks.length === 0) {
+            lines.push("Rule 1 violations:\n[none]\n\n");
+        } else {
+            lines.push("Rule 1 violations:\n");
+            pushAll(lines, p2Rule1Breaks);
+            lines.push("\n");
+        }
+
+        // --- Rule 2 ---
+        if (p2Rule2Breaks.length === 0) {
+            lines.push("Rule 2 violations:\n[none]\n\n");
+        } else {
+            lines.push("Rule 2 violations:\n");
+            pushAll(lines, p2Rule2Breaks);
+            lines.push("\n");
+        }
+
+        // --- Rule 3 ---
+        if (p2Rule3Breaks.length === 0) {
+            lines.push("Rule 3 violations:\n[none]");
+        } else {
+            lines.push("Rule 3 violations:\n");
+            pushAll(lines, p2Rule3Breaks);
+        }
+
+        document.getElementById('cross2').style.visibility = 'visible';
+        document.getElementById('checkboxP2').style.visibility = 'visible';
+    }
+
+    // 🚀 CHUNKED RENDERING
+    renderTextChunked(lines, outbox);
+}
+
+// Old
+/*
 function reportP2Results(){
     document.getElementById('outbox2').value = '';
     if(p2Rule1Breaks.length == 0 && p2Rule2Breaks.length == 0
@@ -2991,7 +3559,7 @@ function reportP2Results(){
         document.getElementById('cross2').style.visibility = 'visible';
         document.getElementById('checkboxP2').style.visibility = 'visible';
     }
-}
+} */
 
 function disable(){
    document.getElementById('upload').style.pointerEvents = 'none';
@@ -3001,17 +3569,16 @@ function disable(){
 
 function checkP1CpsBreaks(){
     derive(p1InputArray, p1Rule1Breaks, violationsP1);
-    Derive(p1InputArray, p1Rule2Breaks, p1Rule3Breaks, p1Rule2MaxCull, 
-        p1Rule3MaxCull, p1Rule2MinCull, p1Rule3MinCull, violationsP1);
+    Derive(p1InputArray, p1Rule2Breaks, p1Rule3Breaks, violationsP1);
 }
 
 function checkP2CpsBreaks(){ 
     derive(p2InputArray, p2Rule1Breaks, violationsP2);
-    Derive(p2InputArray, p2Rule2Breaks, p2Rule3Breaks, p2Rule2MaxCull, 
-        p2Rule3MaxCull, p2Rule2MinCull, p2Rule3MinCull, violationsP2);
+    Derive(p2InputArray, p2Rule2Breaks, p2Rule3Breaks, violationsP2);
 }
 
-function derive(inputFrames, breakArray, violations) {
+// Old
+/*function derive(inputFrames, breakArray, violations) {
     var hasTimeWarps = timewarpInfo.length > 0;
     for (var i = 0; i < inputFrames.length; i++) {
         var firstClickFrame = inputFrames[i];
@@ -3039,22 +3606,7 @@ function derive(inputFrames, breakArray, violations) {
                 }
             }
         }
-        /* Old loop
-        frameOneSecondLater = Math.floor(frameOneSecondLater);
-        var numClicks = 0;
-        var lastClickWithinTime = firstClickFrame;
-        for (var j = 0; j < inputFrames.length; j++) {
-            if (inputFrames[i + j] < frameOneSecondLater) {
-                lastClickWithinTime = inputFrames[i + j];
-                numClicks++;
-            } else if (inputFrames[i + j] > frameOneSecondLater) {
-                break;
-            } else if (inputFrames[i + j] == frameOneSecondLater) {
-                lastClickWithinTime = inputFrames[i + j];
-                numClicks++;
-                break; // Consider not breaking here
-            }
-        } */
+
         frameOneSecondLater = Math.floor(frameOneSecondLater);
         var numClicks = 0;
         var lastClickWithinTime = firstClickFrame;
@@ -3067,8 +3619,7 @@ function derive(inputFrames, breakArray, violations) {
             }
         }
         runningTimeTotal += parseFloat((lastClickWithinTime - bottomThing)) / (previousTimewarpFactor * framerate);
-        //var timeBetween = parseFloat((lastClickWithinTime - firstClickFrame)) / framerate;
-        if (numClicks > 16) { // Originally 15
+        if (numClicks > 16) { // Rule 1 break
             breakArray.push("- " + numClicks + " clicks in 1s: [frame " + firstClickFrame + " to " + frameOneSecondLater +
                 "]: (" + runningTimeTotal.toFixed(3) + "s between first and last)\n");
             violations.push({
@@ -3078,15 +3629,234 @@ function derive(inputFrames, breakArray, violations) {
             });    
         }
     }
+}*/
+
+function derive(inputFrames, breakArray, violations) {
+    const hasTimeWarps = timewarpInfo.length > 0;
+
+    let j = 0;
+
+    for (let i = 0; i < inputFrames.length; i++) {
+
+        const firstClickFrame = inputFrames[i];
+
+        if (j < i) j = i;
+
+        // Compute 1-second window end (same as before)
+        const frameOneSecondLater = computeEndFrame(firstClickFrame, hasTimeWarps);
+
+        while (j < inputFrames.length && inputFrames[j] <= frameOneSecondLater) {
+            j++;
+        }
+
+        const numClicks = j - i;
+
+        if (numClicks > 16) {
+
+            const lastClickWithinTime = inputFrames[j - 1];
+
+            // ✅ Accurate time calculation
+            const runningTimeTotal = computeTimeBetweenFrames(
+                firstClickFrame,
+                lastClickWithinTime
+            );
+
+            breakArray.push(
+                "- " + numClicks + " clicks in 1s: [frame " +
+                firstClickFrame + " to " + frameOneSecondLater +
+                "]: (" + runningTimeTotal.toFixed(3) +
+                "s between first and last)\n"
+            );
+
+            violations.push({
+                start: firstClickFrame,
+                end: lastClickWithinTime,
+                excess: numClicks - 16
+            });
+        }
+    }
 }
 
- function Derive(inputFrames, breakArrayRule2, breakArrayRule3, rule2Max, rule3Max, rule2Min, rule3Min, violations) {
+function computeTimeBetweenFrames(startFrame, endFrame) {
+
+    let [timewarpFactor, indexChecked] = getTimewarp(startFrame);
+    timewarpFactor = Math.max(timewarpFactor, 1);
+
+    let previousTimewarpFactor = timewarpFactor;
+    let runningTimeTotal = 0;
+    let bottomThing = startFrame;
+
+    while (
+        indexChecked < timewarpInfo.length &&
+        timewarpInfo[indexChecked][0] < endFrame
+    ) {
+        const twFrame = timewarpInfo[indexChecked][0];
+        const twFactor = Math.max(timewarpInfo[indexChecked][1], 1);
+
+        runningTimeTotal +=
+            (twFrame - bottomThing) / (previousTimewarpFactor * framerate);
+
+        bottomThing = twFrame;
+        previousTimewarpFactor = twFactor;
+
+        indexChecked++;
+    }
+
+    // Final segment → now ends at lastClickWithinTime ✅
+    runningTimeTotal +=
+        (endFrame - bottomThing) /
+        (previousTimewarpFactor * framerate);
+
+    return runningTimeTotal;
+}
+
+function computeEndFrame(firstClickFrame, hasTimeWarps) {
+
+    let timewarpFactor = 1;
+    let indexChecked = 0;
+
+    if (hasTimeWarps) {
+        const result = getTimewarp(firstClickFrame);
+        timewarpFactor = Math.max(result[0], 1);
+        indexChecked = result[1];
+    }
+
+    let frameOneSecondLater = firstClickFrame + timewarpFactor * framerate;
+
+    let previousTimewarpFactor = timewarpFactor;
+
+    while (
+        indexChecked < timewarpInfo.length &&
+        timewarpInfo[indexChecked][0] < frameOneSecondLater
+    ) {
+        const twFrame = timewarpInfo[indexChecked][0];
+        const twFactor = Math.max(timewarpInfo[indexChecked][1], 1);
+
+        let framesLeft = frameOneSecondLater - twFrame;
+        framesLeft *= twFactor / previousTimewarpFactor;
+
+        frameOneSecondLater = twFrame + framesLeft;
+
+        previousTimewarpFactor = twFactor;
+
+        indexChecked++;
+    }
+
+    return Math.floor(frameOneSecondLater);
+}
+
+function Derive(inputFrames, breakArrayRule2, breakArrayRule3, violations) {
+
+    const hasTimeWarps = timewarpInfo.length > 0;
+
+    let j = 0;
+
+    // =====================================================
+    // 🟣 RULE 3 (Sliding window)
+    // =====================================================
+    for (let i = 0; i < inputFrames.length; i++) {
+
+        const firstClickFrame = inputFrames[i];
+
+        if (j < i) j = i;
+
+        const frameOneSecondLater = computeEndFrame(firstClickFrame, hasTimeWarps);
+
+        // Expand window
+        while (j < inputFrames.length && inputFrames[j] <= frameOneSecondLater) {
+            j++;
+        }
+
+        const windowSize = j - i;
+
+        // Only consider ≥ 5 clicks
+        if (windowSize >= 5) {
+
+            const maxStints = Math.min(windowSize - 4, 12);
+
+            for (let k = 0; k < maxStints; k++) {
+
+                const noClicks = 5 + k;
+
+                const stintStart = inputFrames[i];
+                const stintEnd = inputFrames[i + k + 4];
+
+                const runningTimeTotal = computeTimeBetweenFrames(
+                    stintStart,
+                    stintEnd
+                );
+
+                const cps = (noClicks - 1) / runningTimeTotal;
+
+                if (cps > 48) {
+
+                    const res = Number.isFinite(cps)
+                        ? cps.toFixed(3)
+                        : "\u221E";
+
+                    breakArrayRule3.push(
+                        '- ' + res + " cps rate for the " +
+                        noClicks + " click stint from frames " +
+                        stintStart + " to " + stintEnd +
+                        " (" + runningTimeTotal.toFixed(3) + "s)\n"
+                    );
+
+                    let s;
+                    if (runningTimeTotal === 0) {
+                        s = noClicks - 3;
+                    } else {
+                        s = Math.min(
+                            noClicks - Math.floor(48 * runningTimeTotal + 1),
+                            noClicks - 4
+                        );
+                    }
+
+                    violations.push({
+                        start: stintStart,
+                        end: stintEnd,
+                        excess: s
+                    });
+                }
+            }
+        }
+    }
+
+    // =====================================================
+    // 🔵 RULE 2 (Single pass)
+    // =====================================================
+    let i = 0;
+
+    while (i < inputFrames.length) {
+
+        const frame = inputFrames[i];
+        let count = 1;
+        let j = i + 1;
+
+        while (j < inputFrames.length && inputFrames[j] === frame) {
+            count++;
+            j++;
+        }
+
+        if (count > 3) {
+            breakArrayRule2.push(
+                '- ' + count + " clicks detected on frame " + frame + "\n"
+            );
+
+            violations.push({
+                start: frame,
+                end: frame,
+                excess: count - 3
+            });
+        }
+
+        i = j; // skip entire block
+    }
+}
+
+ /*function Derive(inputFrames, breakArrayRule2, breakArrayRule3, violations) {
     var framesThatBreakRule2 = [];
     var hasTimeWarps = timewarpInfo.length > 0;
     for (var i = 0; i < inputFrames.length; i++) {
-        var min = true;
-        var max = false;
-        var _2break = false, _3break = false;
         inputFramesWithinASecond = [];
 
         var firstClickFrame = inputFrames[i];
@@ -3128,7 +3898,7 @@ function derive(inputFrames, breakArray, violations) {
         }
 
         if (inputFramesWithinASecond.length >= 5) {  // Ignores stints of less than 5 clicks
-        var possibleNumberOfStints = Math.min(inputFramesWithinASecond.length - 4, 12); // Number of stints to check per set of clicks within a second. 11 for 15
+        var possibleNumberOfStints = Math.min(inputFramesWithinASecond.length - 4, 12); // Number of stints to check per set of clicks within a second.
         // Don't need to worry about stints longer than 16 clicks, as if there are more than 16 clicks within a second it will be caught by the rule 1 check
 
         for (var j = 0, noClicks = 5; j < possibleNumberOfStints; j++, noClicks++) {
@@ -3159,14 +3929,13 @@ function derive(inputFrames, breakArray, violations) {
             }
             runningTimeTotal += parseFloat((stintEnd - bottomThing)) / (previousTimewarpFactor * framerate);
 
-            //var timeBetweenClicks = parseFloat(stintEnd - stintStart) / framerate;
-            var cps = (noClicks-1) / runningTimeTotal; // Actual number of clicks instead of 5. Added minus 1
+            var cps = (noClicks-1) / runningTimeTotal;
             if (cps > 48) {
                 var res = Number.isFinite(cps) ? cps.toFixed(3) : "\u221E";
                 breakArrayRule3.push('- ' + res + " cps rate for the " + noClicks + " click stint from frames " + stintStart + " to " + stintEnd + " (" + runningTimeTotal.toFixed(3) + "s)\n");
                 var s;
                 if(runningTimeTotal == 0){
-                    s = noClicks - 3; // 3 to fix rule 2 too, 4 just fixes rule 3 but they should get joined later. maybe not
+                    s = noClicks - 3;
                 }
                 else{
                     s = Math.min(noClicks - Math.floor(48 * runningTimeTotal + 1), noClicks - 4);
@@ -3176,9 +3945,6 @@ function derive(inputFrames, breakArray, violations) {
                     end: stintEnd,
                     excess: s
                 });   
-                _3break = true;
-                max = true;
-                min = false;
             }
         }
     }
@@ -3200,38 +3966,33 @@ function derive(inputFrames, breakArray, violations) {
                 end: inputFrames[i],
                 excess: numberOfClicksOnSameFrame - 3
             });   
-            _2break = true;
-            max = true;
-            min = false;
         }
-
-        /*for (var j = 0; j < inputFramesWithinASecond.length; j++) { 
-            var frameTime = inputFramesWithinASecond[j] - inputFramesWithinASecond[j - 1];
-            var clicksInFrame = Math.floor(1 / frameTime);
-            if (clicksInFrame > 3) {
-                var numClicks = j + 1;
-                var stintStart = inputFramesWithinASecond[0];
-                var stintEnd = inputFramesWithinASecond[j];
-                var timeBetweenClicks = parseFloat(stintEnd - stintStart) / framerate;
-                var cps = numClicks / timeBetweenClicks;
-
-                breakArrayRule2.push('- ' + cps.toFixed(3) + " cps rate for the " + numClicks + " click stint from " + stintStart + " to " + stintEnd + " (" + timeBetweenClicks.toFixed(3) + "s)\n");
-                _2break = true;
-                max = true;
-                min = false;
-                }
-        } */
-
-        /*if (max == true) {
-            if (_2break == true) {
-                rule2Max.push('- More than 3 clicks per frame detected.\n');
-            } else if (_3break == true) {
-                rule3Max.push('- More than 45 cps for 5-click stint detected.\n');
-            }
-        } */
     }
+}*/
+
+// New
+function getTimewarp(frame) {
+    let left = 0;
+    let right = timewarpInfo.length - 1;
+    let resultIndex = -1;
+
+    while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+
+        if (timewarpInfo[mid][0] <= frame) {
+            resultIndex = mid;
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+
+    if (resultIndex === -1) return [1, 0];
+
+    return [timewarpInfo[resultIndex][1], resultIndex + 1];
 }
 
+// Old
 function determineTimewarpFactor(firstClickFrame){
     if(timewarpInfo.length == 1){
         if(firstClickFrame < timewarpInfo[0][0]) {
@@ -3252,7 +4013,7 @@ function determineTimewarpFactor(firstClickFrame){
         }
         return [timewarpInfo[timewarpInfo.length-1][1], timewarpInfo.length];
     }
-}
+} 
 
 
 function validMacro(macro){
@@ -3429,23 +4190,67 @@ document.getElementById('showSwiftsBox').addEventListener('change', async () =>{
     }
 });
 
-document.getElementById('showP1FixBox').addEventListener('change', async () =>{
+/*document.getElementById('showP1FixBox').addEventListener('change', async () =>{
     if(document.getElementById('showP1FixBox').checked == true){
+        if(!p1FixesComputed){
+            reportP1FixInfo();
+        }
         document.getElementById('player1fixbox').style.display='block';
     }   
     else{
         document.getElementById('player1fixbox').style.display='none';
     }
+}); */
+
+document.getElementById('showP1FixBox').addEventListener('change', async () =>{
+    if(document.getElementById('showP1FixBox').checked == false){
+        document.getElementById('player1fixbox').style.display='none';
+        return;
+    }   
+    document.getElementById('player1fixbox').style.display='block';
+
+    if(p1FixesComputed){
+        return;
+    }
+
+    document.getElementById('player1fixbox').value = "Computing...";
+
+    setTimeout(() => {
+        reportP1FixInfo();
+        p1FixesComputed = true;
+    }, 0);
 });
 
 document.getElementById('showP2FixBox').addEventListener('change', async () =>{
+    if(document.getElementById('showP2FixBox').checked == false){
+        document.getElementById('player2fixbox').style.display='none';
+        return;
+    }   
+    document.getElementById('player2fixbox').style.display='block';
+
+    if(p2FixesComputed){
+        return;
+    }
+
+    document.getElementById('player2fixbox').value = "Computing...";
+
+    setTimeout(() => {
+        reportP2FixInfo();
+        p2FixesComputed = true;
+    }, 0);
+});
+
+/*document.getElementById('showP2FixBox').addEventListener('change', async () =>{
     if(document.getElementById('showP2FixBox').checked == true){
+        if(!p2FixesComputed){
+            reportP2FixInfo();
+        }
         document.getElementById('player2fixbox').style.display='block';
     }   
     else{
         document.getElementById('player2fixbox').style.display='none';
     }
-});
+}); */
 
 document.getElementById('help-area').addEventListener('click', async () =>{
     document.getElementById('help-box').style.display='block';
