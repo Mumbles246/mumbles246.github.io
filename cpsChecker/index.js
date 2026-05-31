@@ -3284,7 +3284,7 @@ function reportP2SwiftInfo() {
     document.getElementById('p2st').textContent =
         'Player 2 swift clicks: ' + p1SwiftClicks.length;
 
-    document.getElementById('p1ist').textContent =
+    document.getElementById('p2ist').textContent =
         'Player 2 swift releases: ' + p1InverseSwiftClicks.length;
 
     // --- Build swift clicks text ---
