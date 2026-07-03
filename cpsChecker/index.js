@@ -3282,10 +3282,10 @@ function reportP2SwiftInfo() {
     const inverseBox = document.getElementById('p2inverseswiftsbox');
 
     document.getElementById('p2st').textContent =
-        'Player 2 swift clicks: ' + p1SwiftClicks.length;
+        'Player 2 swift clicks: ' + p2SwiftClicks.length;
 
     document.getElementById('p2ist').textContent =
-        'Player 2 swift releases: ' + p1InverseSwiftClicks.length;
+        'Player 2 swift releases: ' + p2InverseSwiftClicks.length;
 
     // --- Build swift clicks text ---
     const swiftLines = ["["];
